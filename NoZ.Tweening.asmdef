@@ -1,0 +1,21 @@
+{
+    "name": "NoZ.Tweening",
+    "rootNamespace": "",
+    "references": [
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [
+        {
+            "name": "com.unity.modules.ui",
+            "expression": "",
+            "define": "UNITY_UI"
+        }
+    ],
+    "noEngineReferences": false
+}

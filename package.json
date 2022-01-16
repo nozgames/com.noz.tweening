@@ -1,0 +1,19 @@
+{
+  "name": "com.noz.tweening",
+  "version": "0.0.16",
+  "displayName": "NoZ Tweening",
+  "description": "Tweening Ssystem",
+  "unity": "2019.4",
+  "unityRelease": "0f1",
+  "keywords": [
+    "keyword1",
+    "keyword2",
+    "keyword3"
+  ],
+  "author": {
+    "name": "NoZ Games, LLC",
+    "email": "info@nozgames.com",
+    "url": "https://www.nozgames.com"
+  },
+  "type": "tool"
+}
