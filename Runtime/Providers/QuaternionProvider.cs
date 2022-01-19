@@ -1,45 +1,56 @@
+/*
+  NoZ Unity Library
+
+  Copyright(c) 2022 NoZ Games, LLC
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files(the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions :
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+*/
+
 using System;
 using UnityEngine;
-using NoZ.Tweenz.Internals;
+using NoZ.Tweening.Internals;
 
-namespace NoZ.Tweenz
+namespace NoZ.Tweening
 {
+    /// <summary>
+    /// Abstract support for tweening a quaternion.
+    /// </summary>
+    /// <typeparam name="TTarget">Target object type</typeparam>
     public abstract class QuaternionProvider<TTarget> : TweenProvider<TTarget> where TTarget : class
     {
-        public override Variant Evalulate(Variant from, Variant to, float t, uint optionsAsUint) => Quaternion.Slerp(from, to, t);
-        public override Variant Add(Variant a, Variant b, uint optionsAsUint) => a.q * b.q;
-        public override Variant Read(TTarget target, uint optionsAsUint) => ReadQuaternion(target);
-        public override void Write(TTarget target, Variant v, uint optionsAsUint) => WriteQuaternion(target, v);
-
-        protected abstract Quaternion ReadQuaternion(TTarget target);
-        protected abstract void WriteQuaternion(TTarget target, Quaternion value);
-    }
-
-    /// <summary>
-    /// Provides support for quaternion tweens using open callbacks.
-    /// </summary>
-    /// <typeparam name="TTarget">Target type</typeparam>
-    public class QuaternionCallbackProvider<TTarget> : QuaternionProvider<TTarget> where TTarget : class
-    {
-        public delegate Quaternion GetDelegate(TTarget target);
-        public delegate void SetDelegate(TTarget target, Quaternion value);
-
-        private GetDelegate _getter;
-        private SetDelegate _setter;
+        public sealed override Variant Evalulate (Variant from, Variant to, float t, uint optionsAsUint) => Quaternion.SlerpUnclamped(from, to, t);
+        public sealed override Variant GetValue (TTarget target, uint optionsAsUint) => GetValue(target);
+        public sealed override void SetValue (TTarget target, Variant v, uint optionsAsUint) => SetValue(target, v);
 
         /// <summary>
-        /// Construct a quaternion tween provider using a getter and setting callback.
+        /// Method should be implemented to return the current value for the given <paramref name="target"/>
         /// </summary>
-        /// <param name="getter">Delegate used to get values from the target</param>
-        /// <param name="setter">Delegate used to set values from the target</param>
-        public QuaternionCallbackProvider(GetDelegate getter, SetDelegate setter)
-        {
-            _getter = getter;
-            _setter = setter;
-        }
+        /// <param name="target">Target Object</param>
+        /// <returns>Current value</returns>
+        protected abstract Quaternion GetValue (TTarget target);
 
-        protected override Quaternion ReadQuaternion(TTarget target) => _getter(target);
-        protected override void WriteQuaternion(TTarget target, Quaternion value) => _setter(target, value);
+        /// <summary>
+        /// Method should be implemented to set the current value for the given <paramref name="target"/>
+        /// </summary>
+        /// <param name="target">Target Object</param>
+        /// <param name="value">New value</param>
+        protected abstract void SetValue (TTarget target, Quaternion value);
     }
 
     /// <summary>
@@ -48,8 +59,7 @@ namespace NoZ.Tweenz
     /// <typeparam name="TTarget"></typeparam>
     public class QuaternionMemberProvider<TTarget> : QuaternionProvider<TTarget> where TTarget : class
     {
-        private FastGetter<TTarget, Quaternion> _getter;
-        private FastSetter<TTarget, Quaternion> _setter;
+        private FastMember<TTarget, Quaternion> _member;
 
         /// <summary>
         /// Returns a cached member provider for the member with the given <paramref name="memberName"/>.
@@ -59,14 +69,10 @@ namespace NoZ.Tweenz
         public static QuaternionMemberProvider<TTarget> Get(string memberName) =>
             ProviderCache<string, QuaternionMemberProvider<TTarget>>.Get(memberName);
 
-        private QuaternionMemberProvider(string memberName)
-        {
-            _getter = new FastGetter<TTarget, Quaternion>(memberName);
-            _setter = new FastSetter<TTarget, Quaternion>(memberName);
-        }
+        private QuaternionMemberProvider(string memberName) => _member = new FastMember<TTarget, Quaternion>(memberName);
 
-        protected sealed override Quaternion ReadQuaternion(TTarget target) => _getter.GetValue(target);
-        protected sealed override void WriteQuaternion(TTarget target, Quaternion value) => _setter.SetValue(target, value);
+        protected sealed override Quaternion GetValue (TTarget target) => _member.GetValue(target);
+        protected sealed override void SetValue (TTarget target, Quaternion value) => _member.SetValue(target, value);
     }
 }
 

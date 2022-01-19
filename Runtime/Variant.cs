@@ -1,7 +1,31 @@
+/*
+  NoZ Unity Library
+
+  Copyright(c) 2022 NoZ Games, LLC
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files(the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions :
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+*/
+
 using System.Runtime.InteropServices;
 using UnityEngine;
 
-namespace NoZ.Tweenz
+namespace NoZ.Tweening
 {
     /// <summary>
     /// Defines a generic data structure to hold the various data types supported by Tween
@@ -25,39 +49,43 @@ namespace NoZ.Tweenz
         public float f;
 
         [FieldOffset(0)]
-        public short s;
+        public char i8;
 
         [FieldOffset(0)]
-        public int i;
+        public short i16;
 
         [FieldOffset(0)]
-        public long l;
+        public int i32;
 
         [FieldOffset(0)]
-        public ushort us;
+        public long i64;
 
         [FieldOffset(0)]
-        public uint ui;
+        public byte ui8;
 
         [FieldOffset(0)]
-        public ulong ul;
+        public ushort ui16;
+
+        [FieldOffset(0)]
+        public uint ui32;
+
+        [FieldOffset(0)]
+        public ulong ui64;
 
         [FieldOffset(0)]
         public double d;
 
         [FieldOffset(0)]
-        public byte b;
-
-        [FieldOffset(0)]
         public Color c;
 
-        public static implicit operator Variant(byte v) => new Variant { b = v };
-        public static implicit operator Variant(short v) => new Variant { s = v };
-        public static implicit operator Variant(int v) => new Variant { i = v };
-        public static implicit operator Variant(long v) => new Variant { l = v };
-        public static implicit operator Variant(ushort v) => new Variant { us = v };
-        public static implicit operator Variant(uint v) => new Variant { ui = v };
-        public static implicit operator Variant(ulong v) => new Variant { ul = v };
+        public static implicit operator Variant(char v) => new Variant { i8 = v };
+        public static implicit operator Variant(byte v) => new Variant { ui8 = v };
+        public static implicit operator Variant(short v) => new Variant { i16 = v };
+        public static implicit operator Variant(int v) => new Variant { i32 = v };
+        public static implicit operator Variant(long v) => new Variant { i64 = v };
+        public static implicit operator Variant(ushort v) => new Variant { ui16 = v };
+        public static implicit operator Variant(uint v) => new Variant { ui32 = v };
+        public static implicit operator Variant(ulong v) => new Variant { ui64 = v };
         public static implicit operator Variant(float v) => new Variant { f = v };
         public static implicit operator Variant(double v) => new Variant { d = v };
         public static implicit operator Variant(Quaternion v) => new Variant { q = v };
@@ -66,13 +94,14 @@ namespace NoZ.Tweenz
         public static implicit operator Variant(Vector4 v) => new Variant { v4 = v };
         public static implicit operator Variant(Color v) => new Variant { c = v };
 
-        public static implicit operator byte(Variant v) => v.b;
-        public static implicit operator short(Variant v) => v.s;
-        public static implicit operator int(Variant v) => v.i;
-        public static implicit operator long(Variant v) => v.l;
-        public static implicit operator ushort(Variant v) => v.us;
-        public static implicit operator uint(Variant v) => v.ui;
-        public static implicit operator ulong(Variant v) => v.ul;
+        public static implicit operator char(Variant v) => v.i8;
+        public static implicit operator byte(Variant v) => v.ui8;
+        public static implicit operator short(Variant v) => v.i16;
+        public static implicit operator int(Variant v) => v.i32;
+        public static implicit operator long(Variant v) => v.i64;
+        public static implicit operator ushort(Variant v) => v.ui16;
+        public static implicit operator uint(Variant v) => v.ui32;
+        public static implicit operator ulong(Variant v) => v.ui64;
         public static implicit operator float(Variant v) => v.f;
         public static implicit operator double(Variant v) => v.d;
         public static implicit operator Quaternion(Variant v) => v.q;

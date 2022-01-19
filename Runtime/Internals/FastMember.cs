@@ -1,7 +1,7 @@
 ﻿/*
   NoZ Unity Library
 
-  Copyright(c) 2019 NoZ Games, LLC
+  Copyright(c) 2022 NoZ Games, LLC
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files(the "Software"), to deal
@@ -21,25 +21,29 @@
   OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
   SOFTWARE.
 */
+
 using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
-namespace NoZ.Tweenz.Internals
+namespace NoZ.Tweening.Internals
 {
-    internal struct FastGetter<T, V> where T : class
+    internal struct FastMember<T, V> where T : class
     {
         private delegate V GetValueDelegate(T target);
+        private delegate void SetValueDelegate(T target, V value);
 
+        private SetValueDelegate _setValue;
         private GetValueDelegate _getValue;
 
-        public FastGetter(string memberName, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
+        public FastMember(string memberName, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
         {
             // Property
             var propertyInfo = typeof(T).GetProperty(memberName, bindingFlags);
             if (null != propertyInfo)
             {
                 _getValue = (GetValueDelegate)propertyInfo.GetMethod.CreateDelegate(typeof(GetValueDelegate));
+                _setValue = (SetValueDelegate)propertyInfo.SetMethod.CreateDelegate(typeof(SetValueDelegate));
                 return;
             }
 
@@ -56,6 +60,15 @@ namespace NoZ.Tweenz.Internals
                     Expression.Field(source, fieldInfo),
                     source
                 ).Compile();
+
+                source = Expression.Parameter(typeof(T), "source");
+                var value = Expression.Parameter(typeof(V), "value");
+                _setValue = (SetValueDelegate)Expression.Lambda(
+                    typeof(SetValueDelegate),
+                    Expression.Assign(Expression.Field(source, fieldInfo), value),
+                    source,
+                    value
+                ).Compile();
             }
 
             throw new InvalidOperationException($"The type `{typeof(T).Name}` does not contain a property or field named `{memberName}` that matches the binding flags.");
@@ -67,5 +80,13 @@ namespace NoZ.Tweenz.Internals
         /// <param name="target">Target</param>
         /// <returns>Member value</returns>
         public V GetValue(T target) => _getValue(target);
+
+        /// <summary>
+        /// Set the value of the member.  This is the fastest call but requires the 
+        /// target type to be known at call time.
+        /// </summary>
+        /// <param name="target">Target to set the value on</param>
+        /// <param name="value">Value to set</param>
+        public void SetValue(T target, V value) => _setValue(target, value);
     }
 }

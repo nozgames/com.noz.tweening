@@ -30,35 +30,35 @@ namespace NoZ.Tweening
     /// Abstract class that provides support for floating point tweens.
     /// </summary>
     /// <typeparam name="TTarget">Target type</typeparam>
-    public abstract class FloatProvider<TTarget> : TweenProvider<TTarget> where TTarget : class
+    public abstract class DoubleProvider<TTarget> : TweenProvider<TTarget> where TTarget : class
     {
-        public sealed override Variant Evalulate (Variant from, Variant to, float t, uint optionsAsUint) => from.f + (to.f - from.f) * t;
-        public sealed override Variant GetValue (TTarget target, uint optionsAsUint) => GetValue(target);
-        public sealed override void SetValue (TTarget target, Variant v, uint optionsAsUint) => SetValue(target, v);
+        public sealed override Variant Evalulate(Variant from, Variant to, float t, uint optionsAsUint) => from.d + (to.d - from.d) * t;
+        public sealed override Variant GetValue(TTarget target, uint optionsAsUint) => GetValue(target);
+        public sealed override void SetValue(TTarget target, Variant v, uint optionsAsUint) => SetValue(target, v);
 
-        protected abstract float GetValue (TTarget target);
-        protected abstract void SetValue (TTarget target, float value);
+        protected abstract double GetValue(TTarget target);
+        protected abstract void SetValue(TTarget target, double value);
     }
 
     /// <summary>
     /// Provides support for floating point tweens using a Property or Field.
     /// </summary>
     /// <typeparam name="TTarget"></typeparam>
-    public class FloatMemberProvider<TTarget> : FloatProvider<TTarget> where TTarget : class
+    public class DoubleMemberProvider<TTarget> : DoubleProvider<TTarget> where TTarget : class
     {
-        private FastMember<TTarget, float> _member;
+        private FastMember<TTarget, double> _member;
 
         /// <summary>
         /// Returns a cached member provider for the member with the given <paramref name="memberName"/>.
         /// </summary>
         /// <param name="memberName"></param>
         /// <returns></returns>
-        public static FloatMemberProvider<TTarget> Get(string memberName) =>
-            ProviderCache<string, FloatMemberProvider<TTarget>>.Get(memberName);
+        public static DoubleMemberProvider<TTarget> Get(string memberName) =>
+            ProviderCache<string, DoubleMemberProvider<TTarget>>.Get(memberName);
 
-        private FloatMemberProvider(string memberName) => _member = new FastMember<TTarget, float>(memberName);
+        private DoubleMemberProvider(string memberName) => _member = new FastMember<TTarget, double>(memberName);
 
-        protected sealed override float GetValue (TTarget target) => _member.GetValue(target);
-        protected sealed override void SetValue (TTarget target, float value) => _member.SetValue(target, value);
+        protected sealed override double GetValue (TTarget target) => _member.GetValue(target);
+        protected sealed override void SetValue (TTarget target, double value) => _member.SetValue(target, value);
     }
 }
