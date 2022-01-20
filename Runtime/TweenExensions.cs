@@ -42,6 +42,9 @@ namespace NoZ.Tweening
         public static Tween TweenLocalRotation(this Transform transform, Quaternion to) =>
             Tween.To(_transformLocalRotationProvider, transform, to);
 
+        public static Tween TweenLocalRotation(this Transform transform, Vector3 eulerAngles) =>
+            Tween.To(_transformLocalRotationProvider, transform, Quaternion.Euler(eulerAngles));
+
         public static Tween TweenLocalScale(this Transform transform, Vector3 to) =>
             Tween.To(_transformLocalScaleProvider, transform, to);
 
@@ -182,6 +185,19 @@ namespace NoZ.Tweening
         public static Tween TweenAlpha(this CanvasGroup canvasGroup, float to) =>
             Tween.To(_canvasGroupAlphaProvider, canvasGroup, to);
 #endif
+        #endregion
+
+        #region UnityEngine.Light
+
+        private static readonly FloatMemberProvider<Light> _lightIntensityProvider = FloatMemberProvider<Light>.Get("intensity");
+        private static readonly ColorMemberProvider<Light> _lightColorProvider = ColorMemberProvider<Light>.Get("color");
+
+        public static Tween TweenIntensity (this Light target, float to) =>
+            Tween.To(_lightIntensityProvider, target, to);
+
+        public static Tween TweenColor (this Light target, Color to) =>
+            Tween.To(_lightColorProvider, target, to);
+
         #endregion
 
         #region UnityEngine.SpriteRenderer

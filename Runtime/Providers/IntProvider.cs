@@ -22,8 +22,9 @@
   SOFTWARE.
 */
 
-using NoZ.Tweening.Internals;
 using System;
+using UnityEngine;
+using NoZ.Tweening.Internals;
 
 namespace NoZ.Tweening
 {
@@ -47,7 +48,7 @@ namespace NoZ.Tweening
         {
             var value = from.i32 + (to.i32 - from.i32) * t;
             if ((options & (uint)IntOptions.RoundUp) != 0)
-                return (int)MathF.Ceiling(value);
+                return Mathf.CeilToInt(value);
 
             return (int)value;
         }

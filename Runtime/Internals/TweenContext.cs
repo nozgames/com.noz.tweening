@@ -374,14 +374,10 @@ namespace NoZ.Tweening.Internals
                 }
                 // Ease In
                 else if (_easeIn != null)
-                {
                     normalizedTime = _easeIn(normalizedTime, _easeInParams.x, _easeInParams.y);
-                }
                 // Ease Out
                 else if (_easeOut != null)
-                {
-                    normalizedTime = _easeOut(normalizedTime, _easeOutParams.x, _easeOutParams.y);
-                }
+                    normalizedTime = 1f - _easeOut(1f - normalizedTime, _easeOutParams.x, _easeOutParams.y);
 
                 _provider.SetValue(_target, _provider.Evalulate(_from, _to, normalizedTime, _providerOptions), _providerOptions);
             }

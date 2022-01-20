@@ -22,12 +22,12 @@
   SOFTWARE.
 */
 
+using UnityEngine;
 using NoZ.Tweening.Internals;
-using System;
 
 namespace NoZ.Tweening
 {
-    [Flags]
+    [System.Flags]
     public enum ULongOptions : uint
     {
         /// <summary>No options specified</summary>
@@ -45,11 +45,11 @@ namespace NoZ.Tweening
     {
         public sealed override Variant Evalulate(Variant from, Variant to, float t, uint optionsAsUint)
         {
-            var value = from.i64 + (to.i64 - from.i64) * t;
+            var value = from.ui64 + (to.ui64 - from.ui64) * (double)t;
             if ((optionsAsUint & (uint)LongOptions.RoundUp) != 0)
-                return (int)MathF.Ceiling(value);
+                return (ulong)System.Math.Ceiling(value);
 
-            return (int)value;
+            return (ulong)value;
         }
         public sealed override Variant GetValue(TTarget target, uint options) => GetValue(target);
         public sealed override void SetValue(TTarget target, Variant v, uint options) => SetValue(target, v);

@@ -36,6 +36,7 @@ namespace NoZ.Tweening
         private uint _instanceId;
         private TweenContext _context;
 
+        private static EaseDelegate _easeQuadraticDelegate = Easing.EaseQuadratic;
         private static EaseDelegate _easeCubicDelegate = Easing.EaseCubic;
         private static EaseDelegate _easeBackDelegate = Easing.EaseBack;
         private static EaseDelegate _easeElasticDelegate = Easing.EaseElastic;
@@ -125,7 +126,7 @@ namespace NoZ.Tweening
         /// </summary>
         /// <param name="target">Target object to attach tween to</param>
         /// <param name="duration">Options duration of the Wait</param>
-        public static Tween Wait(object target, float duration = 1.0f) => AllocTween(null, target, Vector4.zero, Vector4.zero).Duration(duration);
+        public static Tween Wait(object target, float duration) => AllocTween(null, target, Vector4.zero, Vector4.zero).Duration(duration);
 
         /// <summary>
         /// Create a tween that runs a sequence of child tweens in order.  Use the Element method to 
@@ -474,6 +475,21 @@ namespace NoZ.Tweening
             _context.EaseOut(easeDelegate, param1, param2);
             return this;
         }
+
+        /// <summary>
+        /// Ease in using Quadratic interpolation
+        /// </summary>
+        public Tween EaseInQuadratic() => EaseIn(_easeQuadraticDelegate);
+
+        /// <summary>
+        /// Ease Out using Quadratic interpolation
+        /// </summary>
+        public Tween EaseOutQuadratic() => EaseOut(_easeQuadraticDelegate);
+
+        /// <summary>
+        /// Ease in and out using Quadratic interpolation
+        /// </summary>
+        public Tween EaseInOutQuadratic() => EaseIn(_easeQuadraticDelegate).EaseOut(_easeQuadraticDelegate);
 
         /// <summary>
         /// Ease in using Cubic interpolation

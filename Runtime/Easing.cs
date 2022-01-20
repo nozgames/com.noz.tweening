@@ -37,6 +37,8 @@ namespace NoZ.Tweening
 
     public static class Easing
     {
+        public static float EaseQuadratic(float t, float p1, float p2) => t * t;
+
         public static float EaseCubic (float t, float p1, float p2) => t * t * t;
 
         public static float EaseBack (float t, float p1, float p2) => Mathf.Pow(t, 3f) - t * Mathf.Max(0f, p1) * Mathf.Sin(Mathf.PI * t);
@@ -89,6 +91,6 @@ namespace NoZ.Tweening
             1.0f - Mathf.Sqrt(1.0f - t * t);
 
         public static float EaseExponential (float t, float exponent, float p2) =>
-            exponent == 0.0f ? t : ((Mathf.Exp(exponent * t) - 1.0f) / Mathf.Exp(exponent) - 1.0f);
+            exponent == 0.0f ? t : ((Mathf.Exp(exponent * t) - 1.0f) / (Mathf.Exp(exponent) - 1.0f));
     }
 }

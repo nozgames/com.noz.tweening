@@ -22,8 +22,9 @@
   SOFTWARE.
 */
 
-using NoZ.Tweening.Internals;
 using System;
+using UnityEngine;
+using NoZ.Tweening.Internals;
 
 namespace NoZ.Tweening
 {
@@ -45,11 +46,11 @@ namespace NoZ.Tweening
     {
         public sealed override Variant Evalulate(Variant from, Variant to, float t, uint optionsAsUint)
         {
-            var value = from.i64 + (to.i64 - from.i64) * t;
+            var value = from.i64 + (to.i64 - from.i64) * (double)t;
             if ((optionsAsUint & (uint)LongOptions.RoundUp) != 0)
-                return (int)MathF.Ceiling(value);
+                return (long)Math.Ceiling(value);
 
-            return (int)value;
+            return (long)value;
         }
         public sealed override Variant GetValue(TTarget target, uint options) => GetValue(target);
         public sealed override void SetValue(TTarget target, Variant v, uint options) => SetValue(target, v);
