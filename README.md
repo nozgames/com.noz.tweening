@@ -1,4 +1,6 @@
-# com.noz.tweening
+### com.noz.tweening
+
+Tweening library
 
 ## Installation
 
@@ -7,7 +9,11 @@
 ```json
 {
     "dependencies": {
-        "com.noz.tweening": "https://github.com/nozgames/com.noz.tweening.git#latest"
+        "com.noz.tweening": "https://github.com/nozgames/com.noz.tweening.git#main"
     }
 }
 ```
+
+## Documentation
+
+Coming soon
