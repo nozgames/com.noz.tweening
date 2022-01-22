@@ -22,16 +22,23 @@ Builder interface to easily chain options together
 target.TweenFloat("property", 100.0f).Duration(2.0f).EaseInCubic().EaseOutSine().Loop(4).Play();
 ```
 
-Tween the color of any graphic
+Tweening the color of a graphic
 
 ```
 GetComponent<Graphic>().TweenColor(Color.red).Play();
 ```
 
-Tween a float parameter of a material
+Tweening a float parameter of a material
 
 ```
 material.TweenFloat ("_BorderSize", 10.0f).Play();
+```
+
+Tweening a field of a class
+
+```
+class Foo { public int test = 100; }
+(new Foo).TweenInt ("test", 200).Play();
 ```
 
 ## Documentation
