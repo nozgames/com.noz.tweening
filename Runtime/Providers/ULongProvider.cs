@@ -43,17 +43,22 @@ namespace NoZ.Tweening
     /// <typeparam name="TTarget">Target type</typeparam>
     public abstract class ULongProvider<TTarget> : TweenProvider<TTarget> where TTarget : class
     {
-        public sealed override Variant Evalulate(Variant from, Variant to, float t, uint optionsAsUint)
+        protected internal sealed override Variant Evalulate(Variant from, Variant to, float t, uint options) => Evalulate(from.ui64, to.ui64, t, (ULongOptions)options);
+        protected internal sealed override Variant GetValue(TTarget target, uint options) => GetValue(target);
+        protected internal sealed override void SetValue(TTarget target, Variant v, uint options) => SetValue(target, v);
+
+        protected virtual ulong Evalulate(ulong from, ulong to, float normalizedTime, ULongOptions options)
         {
-            var value = from.ui64 + (to.ui64 - from.ui64) * (double)t;
-            if ((optionsAsUint & (uint)LongOptions.RoundUp) != 0)
+            var value = to > from ?
+                from + (to - from) * (double)normalizedTime :
+                to + (from - to) * (double)(1.0f - normalizedTime);
+
+            if ((options & ULongOptions.RoundUp) == ULongOptions.RoundUp)
                 return (ulong)System.Math.Ceiling(value);
 
             return (ulong)value;
         }
-        public sealed override Variant GetValue(TTarget target, uint options) => GetValue(target);
-        public sealed override void SetValue(TTarget target, Variant v, uint options) => SetValue(target, v);
-        
+
         protected abstract ulong GetValue (TTarget target);
         protected abstract void SetValue (TTarget target, ulong value);
     }

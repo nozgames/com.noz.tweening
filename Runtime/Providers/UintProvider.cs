@@ -44,16 +44,21 @@ namespace NoZ.Tweening
     /// <typeparam name="TTarget">Target type</typeparam>
     public abstract class UIntProvider<TTarget> : TweenProvider<TTarget> where TTarget : class
     {
-        public sealed override Variant Evalulate(Variant from, Variant to, float t, uint options)
+        protected internal sealed override Variant Evalulate(Variant from, Variant to, float t, uint options) => Evalulate(from.ui32, to.ui32, t, (UIntOptions)options);
+        protected internal sealed override Variant GetValue(TTarget target, uint options) => GetValue(target);
+        protected internal sealed override void SetValue(TTarget target, Variant v, uint options) => SetValue(target, v);
+
+        protected virtual uint Evalulate(uint from, uint to, float normalizedTime, UIntOptions options)
         {
-            var value = from.ui32 + (to.ui32 - from.ui32) * t;
-            if ((options & (uint)UIntOptions.RoundUp) != 0)
+            var value = to > from ?
+                from + (to - from) * normalizedTime :
+                to + (from - to) * (1.0f - normalizedTime);
+
+            if ((options & UIntOptions.RoundUp) == UIntOptions.RoundUp)
                 return (uint)Mathf.Ceil(value);
 
             return (uint)value;
         }
-        public sealed override Variant GetValue(TTarget target, uint options) => GetValue(target);
-        public sealed override void SetValue(TTarget target, Variant v, uint options) => SetValue(target, v);
 
         protected abstract uint GetValue (TTarget target);
         protected abstract void SetValue (TTarget target, uint value);

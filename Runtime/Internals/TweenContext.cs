@@ -34,11 +34,8 @@ namespace NoZ.Tweening.Internals
         {
             private void Update() => TweenContext.Update(UpdateMode.Default, Time.deltaTime, Time.unscaledDeltaTime);
             private void FixedUpdate() => TweenContext.Update(UpdateMode.Fixed, Time.fixedDeltaTime, Time.fixedUnscaledDeltaTime);
-            private void LateUpdate()
-            {
-                TweenContext.Update(UpdateMode.Late, Time.deltaTime, Time.unscaledDeltaTime);
-                TweenContext.LateUpdate();
-            }
+            private void LateUpdate() => TweenContext.Update(UpdateMode.Late, Time.deltaTime, Time.unscaledDeltaTime);
+            
             private void OnApplicationQuit()
             {
                 Tween.StopAll(false);
@@ -215,6 +212,21 @@ namespace NoZ.Tweening.Internals
 
         private void ClearFlags(Flags flags) => _flags &= ~(flags);
 
+        public static void Reset()
+        {
+            // Stop all running tweens
+            Stop(executeCallbacks: false);
+
+            // Clear the free cache which will throw all of the cached tweens into the garbage
+            _stateContexts[(int)State.Free].Clear();
+
+            if(_updater)
+            {
+                UnityEngine.Object.Destroy(_updater.gameObject);
+                _updater = null;
+            }
+        }
+
         public void Play()
         {
             if (isElement)
@@ -226,7 +238,6 @@ namespace NoZ.Tweening.Internals
                 var updaterGameObject = new GameObject("TweenZ Updater");
                 updaterGameObject.hideFlags = HideFlags.HideAndDontSave;
                 UnityEngine.Object.DontDestroyOnLoad(updaterGameObject);
-
                 _updater = updaterGameObject.AddComponent<Updater>();
             }
 
@@ -460,7 +471,7 @@ namespace NoZ.Tweening.Internals
             SetFlags(Flags.AutoStop);
         }
 
-        private static void Update (UpdateMode updateMode, float deltaTime, float unscaledDeltaTime)
+        internal static void Update (UpdateMode updateMode, float deltaTime, float unscaledDeltaTime)
         {
             // Move all of the playing nodes that match the update mode into the update list.  We do
             // this because it is possible for contexts's to switch states during the update and 
@@ -478,13 +489,13 @@ namespace NoZ.Tweening.Internals
                 if (context._state == State.Playing)
                     context.Update(context.HasFlags(Flags.UnscaledTime) ? unscaledDeltaTime : deltaTime);
             }
-        }
 
-        private static void LateUpdate()
-        {       
-            // Stop any global tweens that were created without Play being called.
-            for(var node = _stateContexts[(int)State.Created].First; node != null; node = node.Next)
-                node.Value.Free();
+            // Stop any global tweens that were orphaned by creating them without calling Play
+            if (updateMode == UpdateMode.Late)
+            {
+                for (var node = _stateContexts[(int)State.Created].First; node != null; node = node.Next)
+                    node.Value.Free();
+            }
         }
 
         public static TweenContext Alloc (TweenProvider provider, object target, Variant from, Variant to, Flags flags = Flags.None, uint providerOptions = 0)
@@ -537,7 +548,7 @@ namespace NoZ.Tweening.Internals
             }
 
             // Before we free the tween save off some information we need after
-            var onStop = (executeCallbacks && HasFlags(Flags.Evaluating)) ? _onStop : null;
+            var onStop = executeCallbacks ? _onStop : null;
             var target = _target;
             var destroyOnStop = HasFlags(Flags.DestroyOnStop);
             var deactivateOnStop = HasFlags(Flags.DeactivateOnStop);

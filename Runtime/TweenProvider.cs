@@ -37,16 +37,16 @@ namespace NoZ.Tweening
         /// <param name="normalizedTime"></param>
         /// <param name="options"></param>
         /// <returns></returns>
-        public abstract Variant Evalulate (Variant from, Variant to, float normalizedTime, uint options);
-        public abstract Variant GetValue (object target, uint options);
-        public abstract void SetValue (object target, Variant v, uint options);
+        protected internal abstract Variant Evalulate (Variant from, Variant to, float normalizedTime, uint options);
+        protected internal abstract Variant GetValue (object target, uint options);
+        protected internal abstract void SetValue (object target, Variant v, uint options);
     }
 
     public abstract class TweenProvider<TTarget> : TweenProvider where TTarget : class
     {
-        public sealed override Variant GetValue (object target, uint options) => GetValue(target as TTarget, options);
-        public sealed override void SetValue (object target, Variant v, uint options) => SetValue(target as TTarget, v, options);
-        public abstract Variant GetValue (TTarget target, uint options);
-        public abstract void SetValue (TTarget target, Variant v, uint options);
+        protected internal sealed override Variant GetValue (object target, uint options) => GetValue(target as TTarget, options);
+        protected internal sealed override void SetValue (object target, Variant v, uint options) => SetValue(target as TTarget, v, options);
+        protected internal abstract Variant GetValue (TTarget target, uint options);
+        protected internal abstract void SetValue (TTarget target, Variant v, uint options);
     }
 }

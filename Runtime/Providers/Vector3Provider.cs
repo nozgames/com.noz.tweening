@@ -40,9 +40,9 @@ namespace NoZ.Tweening
 
     public abstract class Vector3Provider<TTarget> : TweenProvider<TTarget> where TTarget : class
     {
-        public sealed override Variant Evalulate (Variant from, Variant to, float t, uint optionsAsUint) => Vector3.LerpUnclamped(from, to, t);
-        public sealed override Variant GetValue (TTarget target, uint optionsAsUint) => GetValue(target);
-        public sealed override void SetValue (TTarget target, Variant v, uint optionsAsUint)
+        protected internal sealed override Variant Evalulate(Variant from, Variant to, float t, uint options) => Evalulate(from.v3, to.v3, t, (Vector3Options)options);
+        protected internal sealed override Variant GetValue(TTarget target, uint optionsAsUint) => GetValue(target);
+        protected internal sealed override void SetValue(TTarget target, Variant v, uint optionsAsUint)
         {
             var options = (Vector3Options)optionsAsUint;
             if (options != 0)
@@ -50,10 +50,13 @@ namespace NoZ.Tweening
                 var old = GetValue(target);
                 if ((options & Vector3Options.IgnoreX) == Vector3Options.IgnoreX) v.v3.x = old.x;
                 if ((options & Vector3Options.IgnoreY) == Vector3Options.IgnoreY) v.v3.y = old.y;
-                if ((options & Vector3Options.IgnoreZ) == Vector3Options.IgnoreY) v.v3.z = old.z;
+                if ((options & Vector3Options.IgnoreZ) == Vector3Options.IgnoreZ) v.v3.z = old.z;
             }
             SetValue(target, v);
         }
+
+        protected virtual Vector3 Evalulate(Vector3 from, Vector3 to, float normalizedTime, Vector3Options options) =>
+            Vector3.LerpUnclamped(from, to, normalizedTime);
 
         protected abstract Vector3 GetValue (TTarget target);
         protected abstract void SetValue (TTarget target, Vector3 value);

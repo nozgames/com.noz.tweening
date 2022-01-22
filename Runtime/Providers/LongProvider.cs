@@ -23,7 +23,6 @@
 */
 
 using System;
-using UnityEngine;
 using NoZ.Tweening.Internals;
 
 namespace NoZ.Tweening
@@ -44,17 +43,18 @@ namespace NoZ.Tweening
     /// <typeparam name="TTarget">Target type</typeparam>
     public abstract class LongProvider<TTarget> : TweenProvider<TTarget> where TTarget : class
     {
-        public sealed override Variant Evalulate(Variant from, Variant to, float t, uint optionsAsUint)
+        protected internal sealed override Variant Evalulate(Variant from, Variant to, float t, uint options) => Evalulate(from.i64, to.i64, t, (LongOptions)options);
+        protected internal sealed override Variant GetValue(TTarget target, uint options) => GetValue(target);
+        protected internal sealed override void SetValue(TTarget target, Variant v, uint options) => SetValue(target, v);
+
+        protected virtual long Evalulate(long from, long to, float normalizedTime, LongOptions options)
         {
-            var value = from.i64 + (to.i64 - from.i64) * (double)t;
-            if ((optionsAsUint & (uint)LongOptions.RoundUp) != 0)
+            var value = from + (to - from) * (double)normalizedTime;
+            if ((options & LongOptions.RoundUp) == LongOptions.RoundUp)
                 return (long)Math.Ceiling(value);
 
             return (long)value;
         }
-        public sealed override Variant GetValue(TTarget target, uint options) => GetValue(target);
-        public sealed override void SetValue(TTarget target, Variant v, uint options) => SetValue(target, v);
-
         protected abstract long GetValue (TTarget target);
         protected abstract void SetValue (TTarget target, long value);
     }

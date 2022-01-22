@@ -249,18 +249,18 @@ namespace NoZ.Tweening
             Tween.To(IntMemberProvider<T>.Get(name), target, to, options);
         public static Tween TweenUInt<T>(this T target, string name, uint to, UIntOptions options = UIntOptions.None) where T : class =>
             Tween.To(UIntMemberProvider<T>.Get(name), target, to, options);
-        public static Tween TweenLong<T>(this T target, string name, long to) where T : class =>
-            Tween.To(LongMemberProvider<T>.Get(name), target, to);
+        public static Tween TweenLong<T>(this T target, string name, long to, LongOptions options = LongOptions.None) where T : class =>
+            Tween.To(LongMemberProvider<T>.Get(name), target, to, options);
         public static Tween TweenULong<T>(this T target, string name, ulong to, ULongOptions options = ULongOptions.None) where T : class =>
             Tween.To(ULongMemberProvider<T>.Get(name), target, to, options);
         public static Tween TweenColor<T>(this T target, string name, Color to, ColorOptions options = ColorOptions.None) where T : class =>
             Tween.To(ColorMemberProvider<T>.Get(name), target, to, options);
-        public static Tween TweenVector<T>(this T target, string name, Vector2 to) where T : class =>
-            Tween.To(Vector2MemberProvider<T>.Get(name), target, to);
-        public static Tween TweenVector<T>(this T target, string name, Vector3 to) where T : class =>
-            Tween.To(Vector3MemberProvider<T>.Get(name), target, to);
-        public static Tween TweenVector<T>(this T target, string name, Vector4 to) where T : class =>
-            Tween.To(Vector4MemberProvider<T>.Get(name), target, to);
+        public static Tween TweenVector<T>(this T target, string name, Vector2 to, Vector2Options options = Vector2Options.None) where T : class =>
+            Tween.To(Vector2MemberProvider<T>.Get(name), target, to, options);
+        public static Tween TweenVector<T>(this T target, string name, Vector3 to, Vector3Options options = Vector3Options.None) where T : class =>
+            Tween.To(Vector3MemberProvider<T>.Get(name), target, to, options);
+        public static Tween TweenVector<T>(this T target, string name, Vector4 to, Vector4Options options = Vector4Options.None) where T : class =>
+            Tween.To(Vector4MemberProvider<T>.Get(name), target, to, options);
         public static Tween TweenQuaternion<T>(this T target, string name, Quaternion to) where T : class =>
             Tween.To(QuaternionMemberProvider<T>.Get(name), target, to);
 

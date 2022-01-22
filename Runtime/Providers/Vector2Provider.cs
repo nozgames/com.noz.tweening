@@ -36,9 +36,9 @@ namespace NoZ.Tweening
 
     public abstract class Vector2Provider<TTarget> : TweenProvider<TTarget> where TTarget : class
     {
-        public sealed override Variant Evalulate (Variant from, Variant to, float t, uint optionsAsUint) => Vector2.LerpUnclamped(from, to, t);
-        public sealed override Variant GetValue (TTarget target, uint optionsAsUint) => GetValue(target);
-        public sealed override void SetValue (TTarget target, Variant v, uint optionsAsUint)
+        protected internal sealed override Variant Evalulate(Variant from, Variant to, float t, uint options) => Evalulate(from.v2, to.v2, t, (Vector2Options)options);
+        protected internal sealed override Variant GetValue (TTarget target, uint optionsAsUint) => GetValue(target);
+        protected internal sealed override void SetValue (TTarget target, Variant v, uint optionsAsUint)
         {
             var options = (Vector2Options)optionsAsUint;
             if (options != 0)
@@ -49,6 +49,9 @@ namespace NoZ.Tweening
             }
             SetValue(target, v);
         }
+
+        protected virtual Vector2 Evalulate(Vector2 from, Vector2 to, float normalizedTime, Vector2Options options) => 
+            Vector2.LerpUnclamped(from, to, normalizedTime);
 
         protected abstract Vector2 GetValue (TTarget target);
         protected abstract void SetValue (TTarget target, Vector2 value);

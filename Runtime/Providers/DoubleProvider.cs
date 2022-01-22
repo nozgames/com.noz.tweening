@@ -32,10 +32,11 @@ namespace NoZ.Tweening
     /// <typeparam name="TTarget">Target type</typeparam>
     public abstract class DoubleProvider<TTarget> : TweenProvider<TTarget> where TTarget : class
     {
-        public sealed override Variant Evalulate(Variant from, Variant to, float t, uint optionsAsUint) => from.d + (to.d - from.d) * t;
-        public sealed override Variant GetValue(TTarget target, uint optionsAsUint) => GetValue(target);
-        public sealed override void SetValue(TTarget target, Variant v, uint optionsAsUint) => SetValue(target, v);
+        protected internal sealed override Variant Evalulate(Variant from, Variant to, float t, uint optionsAsUint) => Evalulate(from.d, to.d, t);
+        protected internal sealed override Variant GetValue(TTarget target, uint optionsAsUint) => GetValue(target);
+        protected internal sealed override void SetValue(TTarget target, Variant v, uint optionsAsUint) => SetValue(target, v);
 
+        protected virtual double Evalulate(double from, double to, float normalizedTime) => from + (to - from) * normalizedTime;
         protected abstract double GetValue(TTarget target);
         protected abstract void SetValue(TTarget target, double value);
     }

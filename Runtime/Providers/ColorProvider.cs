@@ -41,9 +41,9 @@ namespace NoZ.Tweening
 
     public abstract class ColorProvider<TTarget> : TweenProvider<TTarget> where TTarget : class
     {
-        public sealed override Variant Evalulate (Variant from, Variant to, float t, uint optionsAsUint) => from.c + (to.c - from.c) * t;
-        public sealed override Variant GetValue (TTarget target, uint optionsAsUint) => GetValue(target);
-        public sealed override void SetValue (TTarget target, Variant v, uint optionsAsUint)
+        protected internal sealed override Variant Evalulate(Variant from, Variant to, float t, uint options) => Evalulate(from.c, to.c, t, (ColorOptions)options);
+        protected internal sealed override Variant GetValue (TTarget target, uint optionsAsUint) => GetValue(target);
+        protected internal sealed override void SetValue (TTarget target, Variant v, uint optionsAsUint)
         {
             var options = (ColorOptions)optionsAsUint;
             if (options != 0)
@@ -56,6 +56,9 @@ namespace NoZ.Tweening
             }
             SetValue(target, v);
         }
+
+        protected virtual Color Evalulate (Color from, Color to, float normalizedTime, ColorOptions options) =>
+            from + (to - from) * normalizedTime;
 
         protected abstract Color GetValue (TTarget target);
         protected abstract void SetValue (TTarget target, Color value);

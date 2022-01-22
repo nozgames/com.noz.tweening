@@ -28,15 +28,31 @@ using NoZ.Tweening.Internals;
 
 namespace NoZ.Tweening
 {
+    [Flags]
+    public enum QuaternionOptions
+    {
+        None = 0,
+    }
+
     /// <summary>
     /// Abstract support for tweening a quaternion.
     /// </summary>
     /// <typeparam name="TTarget">Target object type</typeparam>
     public abstract class QuaternionProvider<TTarget> : TweenProvider<TTarget> where TTarget : class
     {
-        public sealed override Variant Evalulate (Variant from, Variant to, float t, uint optionsAsUint) => Quaternion.SlerpUnclamped(from, to, t);
-        public sealed override Variant GetValue (TTarget target, uint optionsAsUint) => GetValue(target);
-        public sealed override void SetValue (TTarget target, Variant v, uint optionsAsUint) => SetValue(target, v);
+        protected internal sealed override Variant Evalulate (Variant from, Variant to, float t, uint options) => Evalulate(from.q, to.q, t, (QuaternionOptions)options);
+        protected internal sealed override Variant GetValue (TTarget target, uint optionsAsUint) => GetValue(target);
+        protected internal sealed override void SetValue (TTarget target, Variant v, uint optionsAsUint) => SetValue(target, v);
+
+        /// <summary>
+        /// Evaluate an interpolated value
+        /// </summary>
+        /// <param name="from">Starting value</param>
+        /// <param name="to">Ending value</param>
+        /// <param name="normalizedTime">Time from 0-1</param>
+        /// <returns>Interpolated value</returns>
+        protected virtual Quaternion Evalulate(Quaternion from, Quaternion to, float normalizedTime, QuaternionOptions options) =>
+            Quaternion.SlerpUnclamped(from, to, normalizedTime);
 
         /// <summary>
         /// Method should be implemented to return the current value for the given <paramref name="target"/>

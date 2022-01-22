@@ -28,6 +28,7 @@ using UnityEngine;
 using NoZ.Tweening.Internals;
 
 [assembly: InternalsVisibleTo("NoZ.Tweening.Editor")]
+[assembly: InternalsVisibleTo("NoZ.Tweening.Tests")]
 
 namespace NoZ.Tweening
 {
@@ -76,50 +77,55 @@ namespace NoZ.Tweening
         /// </summary>
         public float duration => isPlaying ? _context.duration : 0.0f;
 
-        public static Tween From(TweenProvider provider, object target, Variant from, uint options = 0) =>
+        private static Tween From(TweenProvider provider, object target, Variant from, uint options = 0) =>
             AllocTween(provider, target, from, from, TweenContext.Flags.From, options);
 
-        public static Tween From<T>(IntProvider<T> provider, object target, int from, IntOptions options = IntOptions.None) where T : class => From(provider, target, from, options);
-        public static Tween From<T>(UIntProvider<T> provider, object target, uint from, UIntOptions options = UIntOptions.None) where T : class => From(provider, target, from, options);
-        public static Tween From<T>(LongProvider<T> provider, object target, long from, LongOptions options = LongOptions.None) where T : class => From(provider, target, from, options);
-        public static Tween From<T>(ULongProvider<T> provider, object target, ulong from, ULongOptions options = ULongOptions.None) where T : class => From(provider, target, from, options);
-        public static Tween From<T>(FloatProvider<T> provider, object target, float from) where T : class => From(provider, target, from, 0);
-        public static Tween From<T>(DoubleProvider<T> provider, object target, double from) where T : class => From(provider, target, from, 0);
-        public static Tween From<T>(ColorProvider<T> provider, object target, Color from, ColorOptions options = ColorOptions.None) where T : class => From(provider, target, from, (uint)options);
-        public static Tween From<T>(Vector2Provider<T> provider, object target, Vector2 from, Vector2Options options = Vector2Options.None) where T : class => From(provider, target, (uint)options);
-        public static Tween From<T>(Vector3Provider<T> provider, object target, Vector3 from, Vector3Options options = Vector3Options.None) where T : class => From(provider, target, (uint)options);
-        public static Tween From<T>(Vector4Provider<T> provider, object target, Vector4 from, Vector4Options options = Vector4Options.None) where T : class => From(provider, target, (uint)options);
-        public static Tween From<T>(QuaternionProvider<T> provider, object target, Quaternion from) where T : class => From(provider, target, from, 0);
+        public static Tween From<T>(IntProvider<T> provider, object target, int from, IntOptions options = IntOptions.None) where T : class => From(provider, target, (Variant)from, (uint)options);
+        public static Tween From<T>(UIntProvider<T> provider, object target, uint from, UIntOptions options = UIntOptions.None) where T : class => From(provider, target, (Variant)from, (uint)options);
+        public static Tween From<T>(LongProvider<T> provider, object target, long from, LongOptions options = LongOptions.None) where T : class => From(provider, target, (Variant)from, (uint)options);
+        public static Tween From<T>(ULongProvider<T> provider, object target, ulong from, ULongOptions options = ULongOptions.None) where T : class => From(provider, target, (Variant)from, (uint)options);
+        public static Tween From<T>(FloatProvider<T> provider, object target, float from) where T : class => From(provider, target, (Variant)from, 0);
+        public static Tween From<T>(DoubleProvider<T> provider, object target, double from) where T : class => From(provider, target, (Variant)from, 0);
+        public static Tween From<T>(ColorProvider<T> provider, object target, Color from, ColorOptions options = ColorOptions.None) where T : class => From(provider, target, (Variant)from, (uint)options);
+        public static Tween From<T>(Vector2Provider<T> provider, object target, Vector2 from, Vector2Options options = Vector2Options.None) where T : class => From(provider, target, (Variant)from, (uint)options);
+        public static Tween From<T>(Vector3Provider<T> provider, object target, Vector3 from, Vector3Options options = Vector3Options.None) where T : class => From(provider, target, (Variant)from, (uint)options);
+        public static Tween From<T>(Vector4Provider<T> provider, object target, Vector4 from, Vector4Options options = Vector4Options.None) where T : class => From(provider, target, (Variant)from, (uint)options);
+        public static Tween From<T>(QuaternionProvider<T> provider, object target, Quaternion from, QuaternionOptions options = QuaternionOptions.None) where T : class => From(provider, target, (Variant)from, (uint)options);
 
-        public static Tween To(TweenProvider provider, object target, Variant to, uint options = 0) =>
+        private static Tween To(TweenProvider provider, object target, Variant to, uint options = 0) =>
             AllocTween(provider, target, to, to, TweenContext.Flags.To, options);
 
-        public static Tween To<T>(IntProvider<T> provider, object target, int to, IntOptions options = IntOptions.None) where T : class => To(provider, target, to, options);
-        public static Tween To<T>(UIntProvider<T> provider, object target, uint to, UIntOptions options = UIntOptions.None) where T : class => To(provider, target, to, options);
-        public static Tween To<T>(LongProvider<T> provider, object target, long to, LongOptions options = LongOptions.None) where T : class => To(provider, target, to, options);
-        public static Tween To<T>(ULongProvider<T> provider, object target, ulong to, ULongOptions options = ULongOptions.None) where T : class => To(provider, target, to, options);
-        public static Tween To<T>(FloatProvider<T> provider, object target, float to) where T : class => To(provider, target, to, 0);
-        public static Tween To<T>(DoubleProvider<T> provider, object target, double to) where T : class => To(provider, target, to, 0);
-        public static Tween To<T>(ColorProvider<T> provider, object target, Color to, ColorOptions options = ColorOptions.None) where T : class => To(provider, target, to, (uint)options);
-        public static Tween To<T>(Vector2Provider<T> provider, object target, Vector2 to, Vector2Options options = Vector2Options.None) where T : class => To(provider, target, to, (uint)options);
-        public static Tween To<T>(Vector3Provider<T> provider, object target, Vector3 to, Vector3Options options = Vector3Options.None) where T : class => To(provider, target, to, (uint)options);
-        public static Tween To<T>(Vector4Provider<T> provider, object target, Vector4 to, Vector4Options options = Vector4Options.None) where T : class => To(provider, target, to, (uint)options);
-        public static Tween To<T>(QuaternionProvider<T> provider, object target, Quaternion to) where T : class => To(provider, target, to, 0);
+        public static Tween To<T>(IntProvider<T> provider, object target, int to, IntOptions options = IntOptions.None) where T : class => To(provider, target, (Variant)to, (uint)options);
+        public static Tween To<T>(UIntProvider<T> provider, object target, uint to, UIntOptions options = UIntOptions.None) where T : class => To(provider, target, (Variant)to, (uint)options);
+        public static Tween To<T>(LongProvider<T> provider, object target, long to, LongOptions options = LongOptions.None) where T : class => To(provider, target, (Variant)to, (uint)options);
+        public static Tween To<T>(ULongProvider<T> provider, object target, ulong to, ULongOptions options = ULongOptions.None) where T : class => To(provider, target, (Variant)to, (uint)options);
+        public static Tween To<T>(FloatProvider<T> provider, object target, float to) where T : class => To(provider, target, (Variant)to, 0);
+        public static Tween To<T>(DoubleProvider<T> provider, object target, double to) where T : class => To(provider, target, (Variant)to, 0);
+        public static Tween To<T>(ColorProvider<T> provider, object target, Color to, ColorOptions options = ColorOptions.None) where T : class => To(provider, target, (Variant)to, (uint)options);
+        public static Tween To<T>(Vector2Provider<T> provider, object target, Vector2 to, Vector2Options options = Vector2Options.None) where T : class => To(provider, target, (Variant)to, (uint)options);
+        public static Tween To<T>(Vector3Provider<T> provider, object target, Vector3 to, Vector3Options options = Vector3Options.None) where T : class => To(provider, target, (Variant)to, (uint)options);
+        public static Tween To<T>(Vector4Provider<T> provider, object target, Vector4 to, Vector4Options options = Vector4Options.None) where T : class => To(provider, target, (Variant)to, (uint)options);
+        public static Tween To<T>(QuaternionProvider<T> provider, object target, Quaternion to, QuaternionOptions options = QuaternionOptions.None) where T : class => To(provider, target, to, (uint)options);
 
-        public static Tween FromTo(TweenProvider provider, object target, Variant from, Variant to, uint options = 0) =>
-            AllocTween(provider, target, from, to, TweenContext.Flags.None, options);
+        private static Tween FromTo(TweenProvider provider, object target, Variant from, Variant to, uint options = 0) =>
+            AllocTween(provider, target, from, to, TweenContext.Flags.From | TweenContext.Flags.To, options);
 
-        public static Tween FromTo<T>(IntProvider<T> provider, object target, int from, int to, IntOptions options = IntOptions.None) where T : class => FromTo(provider, target, from, to, options);
-        public static Tween FromTo<T>(UIntProvider<T> provider, object target, uint from, uint to, UIntOptions options = UIntOptions.None) where T : class => FromTo(provider, target, from, to, options);
-        public static Tween FromTo<T>(LongProvider<T> provider, object target, long from, long to, LongOptions options = LongOptions.None) where T : class => FromTo(provider, target, from, to, options);
-        public static Tween FromTo<T>(ULongProvider<T> provider, object target, ulong from, ulong to, ULongOptions options = ULongOptions.None) where T : class => FromTo(provider, target, from, to, options);
-        public static Tween FromTo<T>(FloatProvider<T> provider, object target, float from, float to) where T : class => FromTo(provider, target, from, to, 0);
-        public static Tween FromTo<T>(DoubleProvider<T> provider, object target, double from, double to) where T : class => FromTo(provider, target, from, to, 0);
-        public static Tween FromTo<T>(ColorProvider<T> provider, object target, Color from, Color to, ColorOptions options = ColorOptions.None) where T : class => FromTo(provider, target, from, to, (uint)options);
-        public static Tween FromTo<T>(Vector2Provider<T> provider, object target, Vector2 from, Vector2 to, Vector2Options options = Vector2Options.None) where T : class => FromTo(provider, target, from, to, (uint)options);
-        public static Tween FromTo<T>(Vector3Provider<T> provider, object target, Vector3 from, Vector3 to, Vector3Options options = Vector3Options.None) where T : class => FromTo(provider, target, from, to, (uint)options);
-        public static Tween FromTo<T>(Vector4Provider<T> provider, object target, Vector4 from, Vector4 to, Vector4Options options = Vector4Options.None) where T : class => FromTo(provider, target, from, to, (uint)options);
-        public static Tween FromTo<T>(QuaternionProvider<T> provider, object target, Quaternion from, Quaternion to) where T : class => FromTo(provider, target, from, to, 0);
+        public static Tween FromTo<T>(IntProvider<T> provider, object target, int from, int to, IntOptions options = IntOptions.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+        public static Tween FromTo<T>(UIntProvider<T> provider, object target, uint from, uint to, UIntOptions options = UIntOptions.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+        public static Tween FromTo<T>(LongProvider<T> provider, object target, long from, long to, LongOptions options = LongOptions.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+        public static Tween FromTo<T>(ULongProvider<T> provider, object target, ulong from, ulong to, ULongOptions options = ULongOptions.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+        public static Tween FromTo<T>(FloatProvider<T> provider, object target, float from, float to) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, 0);
+        public static Tween FromTo<T>(DoubleProvider<T> provider, object target, double from, double to) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, 0);
+        public static Tween FromTo<T>(ColorProvider<T> provider, object target, Color from, Color to, ColorOptions options = ColorOptions.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+        public static Tween FromTo<T>(Vector2Provider<T> provider, object target, Vector2 from, Vector2 to, Vector2Options options = Vector2Options.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+        public static Tween FromTo<T>(Vector3Provider<T> provider, object target, Vector3 from, Vector3 to, Vector3Options options = Vector3Options.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+        public static Tween FromTo<T>(Vector4Provider<T> provider, object target, Vector4 from, Vector4 to, Vector4Options options = Vector4Options.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+        public static Tween FromTo<T>(QuaternionProvider<T> provider, object target, Quaternion from, Quaternion to, QuaternionOptions options = QuaternionOptions.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+
+        /// <summary>
+        /// Call to completely reset the tween system by stopping all running tweens, clearing all the caches, and stopping the updater
+        /// </summary>
+        public static void Reset () => TweenContext.Reset();
 
         /// <summary>
         /// Create a tween that just waits for a given amount of time and then finishes.
@@ -242,7 +248,7 @@ namespace NoZ.Tweening
                 return false;
 
             // Update is only allowed with Manual update mode
-            if (_context.isManual)
+            if (!_context.isManual)
                 throw new InvalidOperationException("Update can only be called on tweens with the Manual update mode.");
 
             _context.Update(deltaTime);
