@@ -120,7 +120,6 @@ namespace NoZ.Tweening.Internals
         private float _duration;
         private float _delay;
         private float _elapsed;
-        private LinkedListNode<TweenContext> _tempNode;
         private LinkedListNode<TweenContext> _stateNode;
         private LinkedListNode<TweenContext> _elementsHead;
         private LinkedListNode<TweenContext> _elementsTail;
@@ -129,7 +128,7 @@ namespace NoZ.Tweening.Internals
         internal static LinkedList<TweenContext>[] _stateContexts;
 
         /// <summary>Temporary list used to process contexts</summary>
-        internal static LinkedList<TweenContext> _tempContexts;
+        internal static List<TweenContext> _tempContexts;
 
         /// <summary>MonoBehaviour used to update tweens</summary>
         private static Updater _updater;
@@ -144,7 +143,7 @@ namespace NoZ.Tweening.Internals
             for (int i = (int)State.Count - 1; i >= 0; i--)
                 _stateContexts[i] = new LinkedList<TweenContext>();
 
-            _tempContexts = new LinkedList<TweenContext>();
+            _tempContexts = new List<TweenContext>(128);
         }
 
         public static int GetStateCount(State state) => _stateContexts[(int)state].Count;
@@ -402,7 +401,7 @@ namespace NoZ.Tweening.Internals
             }
 
             // Not done?
-            if (clampedTime < _delay + _duration)
+            if (time < _duration + _delay)
                 return;
 
             // Loop?
@@ -476,19 +475,22 @@ namespace NoZ.Tweening.Internals
             // Move all of the playing nodes that match the update mode into the update list.  We do
             // this because it is possible for contexts's to switch states during the update and 
             // the original list would be modified.
-            _tempContexts.Clear();
+            var tempContextStart = _tempContexts.Count;
             var contexts = _stateContexts[(int)State.Playing];
             for (var node = contexts.First; node != null; node = node.Next)
                 if(node.Value._updateMode == updateMode)
-                    _tempContexts.AddLast(node.Value._tempNode);
+                    _tempContexts.Add(node.Value);
 
-            for(var node = _tempContexts.First; node != null; _tempContexts.Remove(node), node = _tempContexts.First)
+            var tempContextEnd = _tempContexts.Count;
+            for(int tempContextIndex=tempContextStart;  tempContextIndex < tempContextEnd; tempContextIndex++)
             {
                 // It is possible the state changed during the update, if so just skip it
-                var context = node.Value;
+                var context = _tempContexts[tempContextIndex];
                 if (context._state == State.Playing)
                     context.Update(context.HasFlags(Flags.UnscaledTime) ? unscaledDeltaTime : deltaTime);
             }
+
+            _tempContexts.RemoveRange(tempContextStart, tempContextEnd - tempContextStart);
 
             // Stop any global tweens that were orphaned by creating them without calling Play
             if (updateMode == UpdateMode.Late)
@@ -512,7 +514,6 @@ namespace NoZ.Tweening.Internals
             {
                 context = new TweenContext { _state = State.Created };
                 context._stateNode = new LinkedListNode<TweenContext>(context);
-                context._tempNode = new LinkedListNode<TweenContext>(context);
                 _stateContexts[(int)State.Created].AddLast(context._stateNode);
             }
 
@@ -595,20 +596,25 @@ namespace NoZ.Tweening.Internals
         {
             // Add all nodes that match the given filter to the temp contexts list to handle
             // any list updates that will occur when Free is called
-            _tempContexts.Clear();
+            var tempContextStart = _tempContexts.Count;
             for(int i=(int)State.Playing; i<(int)State.Element; i++)
             {
                 for(var node = _stateContexts[i].First; node != null; node = node.Next)
                 {
                     if (id != 0 && node.Value._id != id) continue;
                     if (target != null && node.Value._target != target) continue;
-                    _tempContexts.AddLast(node.Value._tempNode);
+
+                    _tempContexts.Add(node.Value);
                 }
             }
 
             // Process the filtered list.
-            for (var node = _tempContexts.First; node != null; _tempContexts.Remove(node), node = _tempContexts.First)
-                node.Value.Free(executeCallbacks);
+            var tempContextEnd = _tempContexts.Count;
+            for (int tempContextIndex = tempContextStart; tempContextIndex < tempContextEnd; tempContextIndex++)
+                _tempContexts[tempContextIndex].Free(executeCallbacks);
+
+            // Remove our temporary contexts
+            _tempContexts.RemoveRange(tempContextStart, tempContextEnd - tempContextStart);
         }
     }
 }

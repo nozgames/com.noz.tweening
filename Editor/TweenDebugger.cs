@@ -28,6 +28,7 @@ using UnityEditor;
 using UnityEngine;
 using NoZ.Tweening.Internals;
 
+#if UNITY_EDITOR
 namespace NoZ.Tweening.Editor
 {
     // TODO: number of active tweens
@@ -95,4 +96,4 @@ namespace NoZ.Tweening.Editor
         }
     }
 }
-
+#endif

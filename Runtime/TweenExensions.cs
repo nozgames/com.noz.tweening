@@ -23,6 +23,7 @@
 */
 
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace NoZ.Tweening
 {
@@ -243,6 +244,9 @@ namespace NoZ.Tweening
 
         public static Tween TweenFloat<T>(this T target, string name, float to) where T : class =>
             Tween.To(FloatMemberProvider<T>.Get(name), target, to);
+        public static Tween TweenFloat<T>(this T target, string name, StyleFloat to) where T : class =>
+            Tween.To(StyleFloatMemberProvider<T>.Get(name), target, to);
+
         public static Tween TweenDouble<T>(this T target, string name, double to) where T : class =>
             Tween.To(DoubleMemberProvider<T>.Get(name), target, to);
         public static Tween TweenInt<T>(this T target, string name, int to, IntOptions options = IntOptions.None) where T : class =>
@@ -263,6 +267,9 @@ namespace NoZ.Tweening
             Tween.To(Vector4MemberProvider<T>.Get(name), target, to, options);
         public static Tween TweenQuaternion<T>(this T target, string name, Quaternion to) where T : class =>
             Tween.To(QuaternionMemberProvider<T>.Get(name), target, to);
+
+        public static Tween TweenLength<T>(this T target, string name, StyleLength to) where T : class =>
+            Tween.To(StyleLengthMemberProvider<T>.Get(name), target, to);
 
         #endregion
 

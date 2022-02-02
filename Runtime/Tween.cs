@@ -26,6 +26,7 @@ using System;
 using System.Runtime.CompilerServices;
 using UnityEngine;
 using NoZ.Tweening.Internals;
+using UnityEngine.UIElements;
 
 [assembly: InternalsVisibleTo("NoZ.Tweening.Editor")]
 [assembly: InternalsVisibleTo("NoZ.Tweening.Tests")]
@@ -106,6 +107,8 @@ namespace NoZ.Tweening
         public static Tween To<T>(Vector3Provider<T> provider, object target, Vector3 to, Vector3Options options = Vector3Options.None) where T : class => To(provider, target, (Variant)to, (uint)options);
         public static Tween To<T>(Vector4Provider<T> provider, object target, Vector4 to, Vector4Options options = Vector4Options.None) where T : class => To(provider, target, (Variant)to, (uint)options);
         public static Tween To<T>(QuaternionProvider<T> provider, object target, Quaternion to, QuaternionOptions options = QuaternionOptions.None) where T : class => To(provider, target, to, (uint)options);
+        public static Tween To<T>(StyleFloatProvider<T> provider, object target, StyleFloat to) where T : class => To(provider, target, (Variant)to, (uint)0);
+        public static Tween To<T>(StyleLengthProvider<T> provider, object target, StyleLength to) where T : class => To(provider, target, (Variant)to, (uint)0);
 
         private static Tween FromTo(TweenProvider provider, object target, Variant from, Variant to, uint options = 0) =>
             AllocTween(provider, target, from, to, TweenContext.Flags.From | TweenContext.Flags.To, options);
@@ -121,6 +124,8 @@ namespace NoZ.Tweening
         public static Tween FromTo<T>(Vector3Provider<T> provider, object target, Vector3 from, Vector3 to, Vector3Options options = Vector3Options.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
         public static Tween FromTo<T>(Vector4Provider<T> provider, object target, Vector4 from, Vector4 to, Vector4Options options = Vector4Options.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
         public static Tween FromTo<T>(QuaternionProvider<T> provider, object target, Quaternion from, Quaternion to, QuaternionOptions options = QuaternionOptions.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+        public static Tween FromTo<T>(StyleFloatProvider<T> provider, object target, StyleFloat from, StyleFloat to) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)0);
+        public static Tween FromTo<T>(StyleLengthProvider<T> provider, object target, StyleLength from, StyleLength to) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)0);
 
         /// <summary>
         /// Call to completely reset the tween system by stopping all running tweens, clearing all the caches, and stopping the updater

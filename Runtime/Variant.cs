@@ -24,6 +24,7 @@
 
 using System.Runtime.InteropServices;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 namespace NoZ.Tweening
 {
@@ -78,6 +79,18 @@ namespace NoZ.Tweening
         [FieldOffset(0)]
         public Color c;
 
+        [FieldOffset(0)]
+        public StyleInt styleInt;
+
+        [FieldOffset(0)]
+        public StyleFloat styleFloat;
+
+        [FieldOffset(0)]
+        public StyleLength styleLength;
+
+        [FieldOffset(0)]
+        public StyleColor styleColor;
+
         public static implicit operator Variant(char v) => new Variant { i8 = v };
         public static implicit operator Variant(byte v) => new Variant { ui8 = v };
         public static implicit operator Variant(short v) => new Variant { i16 = v };
@@ -93,6 +106,10 @@ namespace NoZ.Tweening
         public static implicit operator Variant(Vector3 v) => new Variant { v3 = v };
         public static implicit operator Variant(Vector4 v) => new Variant { v4 = v };
         public static implicit operator Variant(Color v) => new Variant { c = v };
+        public static implicit operator Variant(StyleInt v) => new Variant { styleInt = v };
+        public static implicit operator Variant(StyleFloat v) => new Variant { styleFloat = v };
+        public static implicit operator Variant(StyleLength v) => new Variant { styleLength = v };
+        public static implicit operator Variant(StyleColor v) => new Variant { styleColor = v };
 
         public static implicit operator char(Variant v) => v.i8;
         public static implicit operator byte(Variant v) => v.ui8;
@@ -109,5 +126,9 @@ namespace NoZ.Tweening
         public static implicit operator Vector3(Variant v) => v.v3;
         public static implicit operator Vector4(Variant v) => v.v4;
         public static implicit operator Color(Variant v) => v.c;
+        public static implicit operator StyleInt(Variant v) => v.styleInt;
+        public static implicit operator StyleFloat(Variant v) => v.styleFloat;
+        public static implicit operator StyleLength(Variant v) => v.styleLength;
+        public static implicit operator StyleColor(Variant v) => v.styleColor;
     }
 }
