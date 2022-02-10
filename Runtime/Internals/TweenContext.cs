@@ -325,7 +325,7 @@ namespace NoZ.Tweening.Internals
 
             // If the target is null it is likely a UnityObject that was destroyed.  In this 
             // case we will stop the tween and not call its callbacks as this is an unclean case.
-            if (_target == null)
+            if ((_target is UnityEngine.Object unityTarget) && unityTarget == null)
             {
                 if (!isElement) Free(false);
                 return;
