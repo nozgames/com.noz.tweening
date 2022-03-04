@@ -229,14 +229,33 @@ namespace NoZ.Tweening
             Tween.To(MaterialProviderUtils.GetProvider<MaterialFloatProvider>(material, Shader.PropertyToID(name)), material, to);
 
         public static Tween TweenColor(this Material material, int id, Color to, ColorOptions options = ColorOptions.None) =>
-            Tween.To(MaterialProviderUtils.GetProvider<MaterialColorProvider>(material, id), material, to);
+            Tween.To(MaterialProviderUtils.GetProvider<MaterialColorProvider>(material, id), material, to, options);
         public static Tween TweenColor(this Material material, string name, Color to, ColorOptions options = ColorOptions.None) =>
-            Tween.To(MaterialProviderUtils.GetProvider<MaterialColorProvider>(material, Shader.PropertyToID(name)), material, to);
+            Tween.To(MaterialProviderUtils.GetProvider<MaterialColorProvider>(material, Shader.PropertyToID(name)), material, to, options);
 
         public static Tween TweenVector(this Material material, int id, Vector4 to, Vector4Options options = Vector4Options.None) =>
             Tween.To(MaterialProviderUtils.GetProvider<MaterialVectorProvider>(material, id), material, to, options);
         public static Tween TweenVector(this Material material, string name, Vector4 to, Vector4Options options = Vector4Options.None) =>
             Tween.To(MaterialProviderUtils.GetProvider<MaterialVectorProvider>(material, Shader.PropertyToID(name)), material, to, options);
+
+        #endregion
+
+        #region UnityEngine.MaterialPropertyBlock
+
+        public static Tween TweenFloat(this MaterialPropertyBlock material, int id, float to) =>
+            Tween.To(MaterialPropertyBlockProviderUtils.GetProvider<MaterialFloatProvider>(material, id), material, to);
+        public static Tween TweenFloat(this MaterialPropertyBlock material, string name, float to) =>
+            Tween.To(MaterialPropertyBlockProviderUtils.GetProvider<MaterialFloatProvider>(material, Shader.PropertyToID(name)), material, to);
+
+        public static Tween TweenColor(this MaterialPropertyBlock material, int id, Color to, ColorOptions options = ColorOptions.None) =>
+            Tween.To(MaterialPropertyBlockProviderUtils.GetProvider<MaterialColorProvider>(material, id), material, to, options);
+        public static Tween TweenColor(this MaterialPropertyBlock material, string name, Color to, ColorOptions options = ColorOptions.None) =>
+            Tween.To(MaterialPropertyBlockProviderUtils.GetProvider<MaterialColorProvider>(material, Shader.PropertyToID(name)), material, to, options);
+
+        public static Tween TweenVector(this MaterialPropertyBlock material, int id, Vector4 to, Vector4Options options = Vector4Options.None) =>
+            Tween.To(MaterialPropertyBlockProviderUtils.GetProvider<MaterialVectorProvider>(material, id), material, to, options);
+        public static Tween TweenVector(this MaterialPropertyBlock material, string name, Vector4 to, Vector4Options options = Vector4Options.None) =>
+            Tween.To(MaterialPropertyBlockProviderUtils.GetProvider<MaterialVectorProvider>(material, Shader.PropertyToID(name)), material, to, options);
 
         #endregion
 
