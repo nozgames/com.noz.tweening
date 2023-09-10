@@ -27,9 +27,11 @@ using System.Runtime.CompilerServices;
 using UnityEngine;
 using NoZ.Tweening.Internals;
 using UnityEngine.UIElements;
+using UnityEngine.Scripting;
 
 [assembly: InternalsVisibleTo("NoZ.Tweening.Editor")]
 [assembly: InternalsVisibleTo("NoZ.Tweening.Tests")]
+[assembly: Preserve]
 
 namespace NoZ.Tweening
 {
@@ -46,6 +48,20 @@ namespace NoZ.Tweening
         private static EaseDelegate _easeSineDelegate = Easing.EaseSine;
         private static EaseDelegate _easeCircleDelegate = Easing.EaseCircle;
         private static EaseDelegate _easeExponential = Easing.EaseExponential;
+        private static EaseDelegate _easeCubicBezier = Easing.EaseCubicBezier;
+
+        /// <summary>
+        /// Returns true if any tween is currently animating.
+        /// </summary>
+        public static bool IsAnyTweenAnimating =>
+            (TweenContext._stateContexts[(int)TweenContext.State.Manual].Count +
+             TweenContext._stateContexts[(int)TweenContext.State.Playing].Count) > 0;
+
+        /// <summary>
+        /// Called each frame that the tween system is running on LateUpdate.
+        /// </summary>
+        /// <returns></returns>
+        public static event Action<int> Frame;
 
         /// <summary>
         /// Returns true if the tween is valid and currently playing.  Note that false will always
@@ -56,7 +72,7 @@ namespace NoZ.Tweening
         /// <summary>
         /// Returns true if the tween is currently paused
         /// </summary>
-        public bool isPaused => isValid && !_context.isElement && !_context.isPaused;
+        public bool isPaused => isValid && !_context.isElement && _context.isPaused;
 
         /// <summary>
         /// Returns true if the tween has not been stopped
@@ -81,63 +97,185 @@ namespace NoZ.Tweening
         private static Tween From(TweenProvider provider, object target, Variant from, uint options = 0) =>
             AllocTween(provider, target, from, from, TweenContext.Flags.From, options);
 
-        public static Tween From<T>(IntProvider<T> provider, object target, int from, IntOptions options = IntOptions.None) where T : class => From(provider, target, (Variant)from, (uint)options);
-        public static Tween From<T>(UIntProvider<T> provider, object target, uint from, UIntOptions options = UIntOptions.None) where T : class => From(provider, target, (Variant)from, (uint)options);
-        public static Tween From<T>(LongProvider<T> provider, object target, long from, LongOptions options = LongOptions.None) where T : class => From(provider, target, (Variant)from, (uint)options);
-        public static Tween From<T>(ULongProvider<T> provider, object target, ulong from, ULongOptions options = ULongOptions.None) where T : class => From(provider, target, (Variant)from, (uint)options);
-        public static Tween From<T>(FloatProvider<T> provider, object target, float from) where T : class => From(provider, target, (Variant)from, 0);
-        public static Tween From<T>(DoubleProvider<T> provider, object target, double from) where T : class => From(provider, target, (Variant)from, 0);
-        public static Tween From<T>(ColorProvider<T> provider, object target, Color from, ColorOptions options = ColorOptions.None) where T : class => From(provider, target, (Variant)from, (uint)options);
-        public static Tween From<T>(Vector2Provider<T> provider, object target, Vector2 from, Vector2Options options = Vector2Options.None) where T : class => From(provider, target, (Variant)from, (uint)options);
-        public static Tween From<T>(Vector3Provider<T> provider, object target, Vector3 from, Vector3Options options = Vector3Options.None) where T : class => From(provider, target, (Variant)from, (uint)options);
-        public static Tween From<T>(Vector4Provider<T> provider, object target, Vector4 from, Vector4Options options = Vector4Options.None) where T : class => From(provider, target, (Variant)from, (uint)options);
-        public static Tween From<T>(QuaternionProvider<T> provider, object target, Quaternion from, QuaternionOptions options = QuaternionOptions.None) where T : class => From(provider, target, (Variant)from, (uint)options);
+        public static Tween From<T>(IntProvider<T> provider, object target, int from,
+            IntOptions options = IntOptions.None) where T : class =>
+            From(provider, target, (Variant)from, (uint)options);
+
+        public static Tween From<T>(UIntProvider<T> provider, object target, uint from,
+            UIntOptions options = UIntOptions.None) where T : class =>
+            From(provider, target, (Variant)from, (uint)options);
+
+        public static Tween From<T>(LongProvider<T> provider, object target, long from,
+            LongOptions options = LongOptions.None) where T : class =>
+            From(provider, target, (Variant)from, (uint)options);
+
+        public static Tween From<T>(ULongProvider<T> provider, object target, ulong from,
+            ULongOptions options = ULongOptions.None) where T : class =>
+            From(provider, target, (Variant)from, (uint)options);
+
+        public static Tween From<T>(FloatProvider<T> provider, object target, float from) where T : class =>
+            From(provider, target, (Variant)from, 0);
+
+        public static Tween From<T>(DoubleProvider<T> provider, object target, double from) where T : class =>
+            From(provider, target, (Variant)from, 0);
+
+        public static Tween From<T>(ColorProvider<T> provider, object target, Color from,
+            ColorOptions options = ColorOptions.None) where T : class =>
+            From(provider, target, (Variant)from, (uint)options);
+
+        public static Tween From<T>(Vector2Provider<T> provider, object target, Vector2 from,
+            Vector2Options options = Vector2Options.None) where T : class =>
+            From(provider, target, (Variant)from, (uint)options);
+
+        public static Tween From<T>(Vector3Provider<T> provider, object target, Vector3 from,
+            Vector3Options options = Vector3Options.None) where T : class =>
+            From(provider, target, (Variant)from, (uint)options);
+
+        public static Tween From<T>(Vector4Provider<T> provider, object target, Vector4 from,
+            Vector4Options options = Vector4Options.None) where T : class =>
+            From(provider, target, (Variant)from, (uint)options);
+
+        public static Tween From<T>(QuaternionProvider<T> provider, object target, Quaternion from,
+            QuaternionOptions options = QuaternionOptions.None) where T : class =>
+            From(provider, target, (Variant)from, (uint)options);
 
         private static Tween To(TweenProvider provider, object target, Variant to, uint options = 0) =>
             AllocTween(provider, target, to, to, TweenContext.Flags.To, options);
 
-        public static Tween To<T>(IntProvider<T> provider, object target, int to, IntOptions options = IntOptions.None) where T : class => To(provider, target, (Variant)to, (uint)options);
-        public static Tween To<T>(UIntProvider<T> provider, object target, uint to, UIntOptions options = UIntOptions.None) where T : class => To(provider, target, (Variant)to, (uint)options);
-        public static Tween To<T>(LongProvider<T> provider, object target, long to, LongOptions options = LongOptions.None) where T : class => To(provider, target, (Variant)to, (uint)options);
-        public static Tween To<T>(ULongProvider<T> provider, object target, ulong to, ULongOptions options = ULongOptions.None) where T : class => To(provider, target, (Variant)to, (uint)options);
-        public static Tween To<T>(FloatProvider<T> provider, object target, float to) where T : class => To(provider, target, (Variant)to, 0);
-        public static Tween To<T>(DoubleProvider<T> provider, object target, double to) where T : class => To(provider, target, (Variant)to, 0);
-        public static Tween To<T>(ColorProvider<T> provider, object target, Color to, ColorOptions options = ColorOptions.None) where T : class => To(provider, target, (Variant)to, (uint)options);
-        public static Tween To<T>(Vector2Provider<T> provider, object target, Vector2 to, Vector2Options options = Vector2Options.None) where T : class => To(provider, target, (Variant)to, (uint)options);
-        public static Tween To<T>(Vector3Provider<T> provider, object target, Vector3 to, Vector3Options options = Vector3Options.None) where T : class => To(provider, target, (Variant)to, (uint)options);
-        public static Tween To<T>(Vector4Provider<T> provider, object target, Vector4 to, Vector4Options options = Vector4Options.None) where T : class => To(provider, target, (Variant)to, (uint)options);
-        public static Tween To<T>(QuaternionProvider<T> provider, object target, Quaternion to, QuaternionOptions options = QuaternionOptions.None) where T : class => To(provider, target, to, (uint)options);
-        public static Tween To<T>(StyleFloatProvider<T> provider, object target, StyleFloat to) where T : class => To(provider, target, (Variant)to, (uint)0);
-        public static Tween To<T>(StyleLengthProvider<T> provider, object target, StyleLength to) where T : class => To(provider, target, (Variant)to, (uint)0);
+        public static Tween To<T>(IntProvider<T> provider, object target, int to, IntOptions options = IntOptions.None)
+            where T : class => To(provider, target, (Variant)to, (uint)options);
 
-        private static Tween FromTo(TweenProvider provider, object target, Variant from, Variant to, uint options = 0) =>
+        public static Tween To<T>(UIntProvider<T> provider, object target, uint to,
+            UIntOptions options = UIntOptions.None) where T : class => To(provider, target, (Variant)to, (uint)options);
+
+        public static Tween To<T>(LongProvider<T> provider, object target, long to,
+            LongOptions options = LongOptions.None) where T : class => To(provider, target, (Variant)to, (uint)options);
+
+        public static Tween To<T>(ULongProvider<T> provider, object target, ulong to,
+            ULongOptions options = ULongOptions.None) where T : class =>
+            To(provider, target, (Variant)to, (uint)options);
+
+        public static Tween To<T>(FloatProvider<T> provider, object target, float to) where T : class =>
+            To(provider, target, (Variant)to, 0);
+
+        public static Tween To<T>(DoubleProvider<T> provider, object target, double to) where T : class =>
+            To(provider, target, (Variant)to, 0);
+
+        public static Tween To<T>(ColorProvider<T> provider, object target, Color to,
+            ColorOptions options = ColorOptions.None) where T : class =>
+            To(provider, target, (Variant)to, (uint)options);
+
+        public static Tween To<T>(Vector2Provider<T> provider, object target, Vector2 to,
+            Vector2Options options = Vector2Options.None) where T : class =>
+            To(provider, target, (Variant)to, (uint)options);
+
+        public static Tween To<T>(Vector3Provider<T> provider, object target, Vector3 to,
+            Vector3Options options = Vector3Options.None) where T : class =>
+            To(provider, target, (Variant)to, (uint)options);
+
+        public static Tween To<T>(Vector4Provider<T> provider, object target, Vector4 to,
+            Vector4Options options = Vector4Options.None) where T : class =>
+            To(provider, target, (Variant)to, (uint)options);
+
+        public static Tween To<T>(QuaternionProvider<T> provider, object target, Quaternion to,
+            QuaternionOptions options = QuaternionOptions.None) where T : class =>
+            To(provider, target, to, (uint)options);
+
+        public static Tween To<T>(StyleFloatProvider<T> provider, object target, StyleFloat to) where T : class =>
+            To(provider, target, (Variant)to, (uint)0);
+
+        public static Tween To<T>(StyleLengthProvider<T> provider, object target, StyleLength to) where T : class =>
+            To(provider, target, (Variant)to, (uint)0);
+
+        public static Tween To<T>(StyleScaleProvider<T> provider, object target, StyleScale to) where T : class =>
+            To(provider, target, (Variant)to, (uint)0);
+
+        public static Tween To<T>(StyleColorProvider<T> provider, object target, StyleColor to, ColorOptions options)
+            where T : class => To(provider, target, (Variant)to, (uint)options);
+
+        public static Tween To<T>(StyleRotateProvider<T> provider, object target, StyleRotate to) where T : class =>
+            To(provider, target, (Variant)to, (uint)0);
+
+        public static Tween To<T>(StyleTranslateProvider<T> provider, object target, StyleTranslate to)
+            where T : class => To(provider, target, (Variant)to, (uint)0);
+
+        private static Tween FromTo(TweenProvider provider, object target, Variant from, Variant to,
+            uint options = 0) =>
             AllocTween(provider, target, from, to, TweenContext.Flags.From | TweenContext.Flags.To, options);
 
-        public static Tween FromTo<T>(IntProvider<T> provider, object target, int from, int to, IntOptions options = IntOptions.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
-        public static Tween FromTo<T>(UIntProvider<T> provider, object target, uint from, uint to, UIntOptions options = UIntOptions.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
-        public static Tween FromTo<T>(LongProvider<T> provider, object target, long from, long to, LongOptions options = LongOptions.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
-        public static Tween FromTo<T>(ULongProvider<T> provider, object target, ulong from, ulong to, ULongOptions options = ULongOptions.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
-        public static Tween FromTo<T>(FloatProvider<T> provider, object target, float from, float to) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, 0);
-        public static Tween FromTo<T>(DoubleProvider<T> provider, object target, double from, double to) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, 0);
-        public static Tween FromTo<T>(ColorProvider<T> provider, object target, Color from, Color to, ColorOptions options = ColorOptions.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
-        public static Tween FromTo<T>(Vector2Provider<T> provider, object target, Vector2 from, Vector2 to, Vector2Options options = Vector2Options.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
-        public static Tween FromTo<T>(Vector3Provider<T> provider, object target, Vector3 from, Vector3 to, Vector3Options options = Vector3Options.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
-        public static Tween FromTo<T>(Vector4Provider<T> provider, object target, Vector4 from, Vector4 to, Vector4Options options = Vector4Options.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
-        public static Tween FromTo<T>(QuaternionProvider<T> provider, object target, Quaternion from, Quaternion to, QuaternionOptions options = QuaternionOptions.None) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
-        public static Tween FromTo<T>(StyleFloatProvider<T> provider, object target, StyleFloat from, StyleFloat to) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)0);
-        public static Tween FromTo<T>(StyleLengthProvider<T> provider, object target, StyleLength from, StyleLength to) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)0);
+        public static Tween FromTo<T>(IntProvider<T> provider, object target, int from, int to,
+            IntOptions options = IntOptions.None) where T : class =>
+            FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+
+        public static Tween FromTo<T>(UIntProvider<T> provider, object target, uint from, uint to,
+            UIntOptions options = UIntOptions.None) where T : class =>
+            FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+
+        public static Tween FromTo<T>(LongProvider<T> provider, object target, long from, long to,
+            LongOptions options = LongOptions.None) where T : class =>
+            FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+
+        public static Tween FromTo<T>(ULongProvider<T> provider, object target, ulong from, ulong to,
+            ULongOptions options = ULongOptions.None) where T : class =>
+            FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+
+        public static Tween FromTo<T>(FloatProvider<T> provider, object target, float from, float to) where T : class =>
+            FromTo(provider, target, (Variant)from, (Variant)to, 0);
+
+        public static Tween FromTo<T>(DoubleProvider<T> provider, object target, double from, double to)
+            where T : class => FromTo(provider, target, (Variant)from, (Variant)to, 0);
+
+        public static Tween FromTo<T>(ColorProvider<T> provider, object target, Color from, Color to,
+            ColorOptions options = ColorOptions.None) where T : class =>
+            FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+
+        public static Tween FromTo<T>(Vector2Provider<T> provider, object target, Vector2 from, Vector2 to,
+            Vector2Options options = Vector2Options.None) where T : class =>
+            FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+
+        public static Tween FromTo<T>(Vector3Provider<T> provider, object target, Vector3 from, Vector3 to,
+            Vector3Options options = Vector3Options.None) where T : class =>
+            FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+
+        public static Tween FromTo<T>(Vector4Provider<T> provider, object target, Vector4 from, Vector4 to,
+            Vector4Options options = Vector4Options.None) where T : class =>
+            FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+
+        public static Tween FromTo<T>(QuaternionProvider<T> provider, object target, Quaternion from, Quaternion to,
+            QuaternionOptions options = QuaternionOptions.None) where T : class =>
+            FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+
+        public static Tween FromTo<T>(StyleFloatProvider<T> provider, object target, StyleFloat from, StyleFloat to)
+            where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)0);
+
+        public static Tween FromTo<T>(StyleLengthProvider<T> provider, object target, StyleLength from, StyleLength to)
+            where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)0);
+
+        public static Tween FromTo<T>(StyleScaleProvider<T> provider, object target, StyleScale from, StyleScale to)
+            where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)0);
+
+        public static Tween FromTo<T>(StyleColorProvider<T> provider, object target, StyleColor from, StyleColor to,
+            ColorOptions options) where T : class =>
+            FromTo(provider, target, (Variant)from, (Variant)to, (uint)options);
+
+        public static Tween FromTo<T>(StyleRotateProvider<T> provider, object target, StyleRotate from, StyleRotate to)
+            where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)0);
+
+        public static Tween FromTo<T>(StyleTranslateProvider<T> provider, object target, StyleTranslate from,
+            StyleTranslate to) where T : class => FromTo(provider, target, (Variant)from, (Variant)to, (uint)0);
 
         /// <summary>
         /// Call to completely reset the tween system by stopping all running tweens, clearing all the caches, and stopping the updater
         /// </summary>
-        public static void Reset () => TweenContext.Reset();
+        public static void Reset() => TweenContext.Reset();
 
         /// <summary>
         /// Create a tween that just waits for a given amount of time and then finishes.
         /// </summary>
         /// <param name="target">Target object to attach tween to</param>
         /// <param name="duration">Options duration of the Wait</param>
-        public static Tween Wait(object target, float duration) => AllocTween(null, target, Vector4.zero, Vector4.zero).Duration(duration);
+        public static Tween Wait(object target, float duration) =>
+            AllocTween(null, target, Vector4.zero, Vector4.zero).Duration(duration);
 
         /// <summary>
         /// Create a tween that runs a sequence of child tweens in order.  Use the Element method to 
@@ -147,7 +285,8 @@ namespace NoZ.Tweening
         /// the total of all child elements.
         /// </summary>
         /// <param name="target">Target object to attach tween to</param>
-        public static Tween Sequence(object target) => AllocTween(null, target, Vector4.zero, Vector4.zero, TweenContext.Flags.Collection | TweenContext.Flags.Sequence);
+        public static Tween Sequence(object target) => AllocTween(null, target, Vector4.zero, Vector4.zero,
+            TweenContext.Flags.Collection | TweenContext.Flags.Sequence);
 
         /// <summary>
         /// Create a tween that runs a group of elements in parallel.  Use the Element method to
@@ -157,7 +296,8 @@ namespace NoZ.Tweening
         /// the total of all child elements.
         /// </summary>
         /// <param name="target">Target object to attach tween to</param>
-        public static Tween Group(object target) => AllocTween(null, target, Vector4.zero, Vector4.zero, TweenContext.Flags.Collection);
+        public static Tween Group(object target) =>
+            AllocTween(null, target, Vector4.zero, Vector4.zero, TweenContext.Flags.Collection);
 
         /// <summary>
         /// Stop all tweens running on a target object
@@ -183,16 +323,16 @@ namespace NoZ.Tweening
             if (id == 0)
                 return;
 
-            TweenContext.Stop(executeCallbacks:executeCallbacks, id:id);
+            TweenContext.Stop(executeCallbacks: executeCallbacks, id: id);
         }
 
         /// <summary>
         /// Stop all playing tweens
         /// </summary>
         /// <param name="executeCallbacks"></param>
-        public static void StopAll(bool executeCallbacks=true)
+        public static void StopAll(bool executeCallbacks = true)
         {
-            TweenContext.Stop (executeCallbacks:executeCallbacks);
+            TweenContext.Stop(executeCallbacks: executeCallbacks);
         }
 
         /// <summary>
@@ -205,7 +345,8 @@ namespace NoZ.Tweening
                 throw new InvalidOperationException("Invalid tween");
 
             if (_context.isElement)
-                throw new InvalidOperationException("Play cannot be called on tweens that are part of a collection, instead call Play on the collection");
+                throw new InvalidOperationException(
+                    "Play cannot be called on tweens that are part of a collection, instead call Play on the collection");
 
             _context.Play();
 
@@ -222,7 +363,8 @@ namespace NoZ.Tweening
                 return;
 
             if (_context.isElement)
-                throw new System.InvalidOperationException("Stop cannot be called on tweens that are elements in a collection, instead call Stop on the collection");
+                throw new System.InvalidOperationException(
+                    "Stop cannot be called on tweens that are elements in a collection, instead call Stop on the collection");
 
             _context.Free(executeCallbacks);
         }
@@ -237,7 +379,8 @@ namespace NoZ.Tweening
                 return;
 
             if (_context.isElement)
-                throw new InvalidOperationException("Pause cannot be called on tweens that are part of a collection, instead call Pause on the collection");
+                throw new InvalidOperationException(
+                    "Pause cannot be called on tweens that are part of a collection, instead call Pause on the collection");
 
             _context.Pause();
         }
@@ -247,7 +390,7 @@ namespace NoZ.Tweening
         /// </summary>
         /// <param name="deltaTime"></param>
         /// <returns>True if the tween is still running</returns>
-        public bool Update (float deltaTime)
+        public bool Update(float deltaTime)
         {
             if (!isValid)
                 return false;
@@ -259,6 +402,18 @@ namespace NoZ.Tweening
             _context.Update(deltaTime);
 
             return isPlaying;
+        }
+
+        /// <summary>
+        /// Sets a user defined value that indicates the priority of the tween.  This priority is
+        /// then used in Tween.Frame to allow the application to determine the max priority being run
+        /// </summary>
+        /// <param name="priority"></param>
+        /// <returns></returns>
+        public Tween Priority(int priority)
+        {
+            ValidateModifierContext()._priority = priority;
+            return this;
         }
 
         /// <summary>
@@ -274,7 +429,8 @@ namespace NoZ.Tweening
             if (seconds < 0.0f)
                 throw new InvalidOperationException("Tween delay must be greater or equal to zero");
 
-            ValidateModifierContext().delay = seconds; return this;
+            ValidateModifierContext().delay = seconds;
+            return this;
         }
 
         /// <summary>
@@ -312,7 +468,11 @@ namespace NoZ.Tweening
         /// Callback to invoke when the Tween starts playing and the delay is finished
         /// </summary>
         /// <param name="callback">Action</param>
-        public Tween OnPlay(Action callback) { ValidateModifierContext().onPlay = callback; return this; }
+        public Tween OnPlay(Action callback)
+        {
+            ValidateModifierContext().onPlay = callback;
+            return this;
+        }
 
         /// <summary>
         /// Callback to invoke when the Tween is stopped
@@ -321,37 +481,61 @@ namespace NoZ.Tweening
         /// an executeCallbacks value of false.
         /// </summary>
         /// <param name="callback">Action</param>
-        public Tween OnStop(Action callback) { ValidateModifierContext().onStop = callback; return this; }
+        public Tween OnStop(Action callback)
+        {
+            ValidateModifierContext().onStop = callback;
+            return this;
+        }
 
         /// <summary>
         /// Set the tween update mode.
         /// </summary>
         /// <param name="value">True to run on fixed update, false otherwise</param>
-        public Tween UpdateMode(UpdateMode mode) { ValidateModifierContext().updateMode = mode; return this; }
+        public Tween UpdateMode(UpdateMode mode)
+        {
+            ValidateModifierContext().updateMode = mode;
+            return this;
+        }
 
         /// <summary>
         /// Set a unique identifier for the tween. Setting a unique identifier value of zero indicates
         /// that a tween has no identifier.
         /// </summary>
         /// <param name="id">Unique identier</param>
-        public Tween Id(int id) { ValidateModifierContext().id = id; return this; }
+        public Tween Id(int id)
+        {
+            ValidateModifierContext().id = id;
+            return this;
+        }
 
         /// <summary>
         /// Set the tween to automatically destroy the GameObject attached to the target when the Tween stops
         /// </summary>
-        public Tween DestroyOnStop(bool value = true) { ValidateModifierContext().destroyOnStop = value; return this; }
+        public Tween DestroyOnStop(bool value = true)
+        {
+            ValidateModifierContext().destroyOnStop = value;
+            return this;
+        }
 
         /// <summary>
         /// Set the tween to automatically deactivate the GameObject attached to the target when the Tween stops
         /// </summary>
-        public Tween DeactivateOnStop(bool value = true) { ValidateModifierContext().deactivateOnStop = value; return this; }
+        public Tween DeactivateOnStop(bool value = true)
+        {
+            ValidateModifierContext().deactivateOnStop = value;
+            return this;
+        }
 
         /// <summary>
         /// Automatically disable the target Component when the Tween stops
         /// </summary>
         /// <param name="disable">True to enable, false to disable</param>
         /// <returns></returns>
-        public Tween DisableOnStop(bool value = true) { ValidateModifierContext().disableOnStop = value; return this; }
+        public Tween DisableOnStop(bool value = true)
+        {
+            ValidateModifierContext().disableOnStop = value;
+            return this;
+        }
 
         /// <summary>
         /// Whether or not the tween should automatically stop itself when the <see cref="Tween.time"/> is greater
@@ -361,7 +545,7 @@ namespace NoZ.Tweening
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        public Tween AutoStop (bool value=true)
+        public Tween AutoStop(bool value = true)
         {
             ValidateModifierContext().autoStop = value;
             return this;
@@ -374,12 +558,13 @@ namespace NoZ.Tweening
         /// including easing modes.
         /// </summary>
         /// <param name="value">True to enable PingPong mode.</param>
-        public Tween PingPong(bool value=true)
+        public Tween PingPong(bool value = true)
         {
             ValidateModifierContext();
 
             if (_context.isCollection)
-                throw new InvalidOperationException("PingPong is not supported on group or sequence tweens, instead set PingPong on individual elements");
+                throw new InvalidOperationException(
+                    "PingPong is not supported on group or sequence tweens, instead set PingPong on individual elements");
 
             _context.pingPong = value;
             return this;
@@ -443,7 +628,8 @@ namespace NoZ.Tweening
                 throw new InvalidOperationException("Element modifier must be given an Unstarted tween");
 
             if (elementContext.isElement)
-                throw new InvalidOperationException("Tween specified for Element modifier is already an element of another Tween");
+                throw new InvalidOperationException(
+                    "Tween specified for Element modifier is already an element of another Tween");
 
             if (elementContext.looping)
                 throw new InvalidOperationException("Loop is not supported on Element tweens");
@@ -453,37 +639,40 @@ namespace NoZ.Tweening
             return this;
         }
 
+        public Tween EaseIn(EaseDelegate easeDelegate) => EaseIn(easeDelegate, Vector4.zero);
+
         /// <summary>
         /// Ease in using the given easing function
         /// </summary>
         /// <param name="easeDelegate">Delegate to use for easing int</param>
-        /// <param name="param1">Optional easing paramter</param>
-        /// <param name="param2">Optional easing paramter</param>
-        public Tween EaseIn(EaseDelegate easeDelegate, float param1 = 0.0f, float param2 = 0.0f)
+        public Tween EaseIn(EaseDelegate easeDelegate, Vector4 param)
         {
             ValidateModifierContext();
 
             if (_context.isCollection)
-                throw new InvalidOperationException("Easing is not supported on group or sequence tweens, instead set easing on individual elements");
+                throw new InvalidOperationException(
+                    "Easing is not supported on group or sequence tweens, instead set easing on individual elements");
 
-            _context.EaseIn(easeDelegate, param1, param2);
+            _context.EaseIn(easeDelegate, param);
             return this;
         }
+
+        public Tween EaseOut(EaseDelegate easeDelegate) => EaseOut(easeDelegate, Vector4.zero);
 
         /// <summary>
         /// Ease out using the given easing function
         /// </summary>
         /// <param name="easeDelegate">Delegate to use for easing out</param>
-        /// <param name="param1">Optional easing paramter</param>
-        /// <param name="param2">Optional easing paramter</param>
-        public Tween EaseOut(EaseDelegate easeDelegate, float param1 = 0.0f, float param2 = 0.0f)
+        /// <param name="easeParams">Optional easing paramters</param>
+        public Tween EaseOut(EaseDelegate easeDelegate, Vector4 easeParams)
         {
             ValidateModifierContext();
 
             if (_context.isCollection)
-                throw new InvalidOperationException("Easing is not supported on group or sequence tweens, instead set easing on individual elements");
+                throw new InvalidOperationException(
+                    "Easing is not supported on group or sequence tweens, instead set easing on individual elements");
 
-            _context.EaseOut(easeDelegate, param1, param2);
+            _context.EaseOut(easeDelegate, easeParams);
             return this;
         }
 
@@ -517,17 +706,31 @@ namespace NoZ.Tweening
         /// </summary>
         public Tween EaseInOutCubic() => EaseIn(_easeCubicDelegate).EaseOut(_easeCubicDelegate);
 
-        public Tween EaseInBack(float amplitude = 1f) => EaseIn(_easeBackDelegate, amplitude);
-        public Tween EaseOutBack(float amplitude = 1f) => EaseOut(_easeBackDelegate, amplitude);
-        public Tween EaseInOutBack(float amplitude = 1f) => EaseIn(_easeBackDelegate, amplitude).EaseOut(_easeBackDelegate, amplitude);
+        public Tween EaseInBack(float amplitude = 1f) => EaseIn(_easeBackDelegate, new Vector4(amplitude, 0, 0, 0));
+        public Tween EaseOutBack(float amplitude = 1f) => EaseOut(_easeBackDelegate, new Vector4(amplitude, 0, 0, 0));
 
-        public Tween EaseInElastic(int oscillations = 3, float springiness = 3f) => EaseIn(_easeElasticDelegate, oscillations, springiness);
-        public Tween EaseOutElastic(int oscillations = 3, float springiness = 3f) => EaseOut(_easeElasticDelegate, oscillations, springiness);
-        public Tween EaseInOutElastic(int oscillations = 3, float springiness = 3f) => EaseIn(_easeElasticDelegate, oscillations, springiness).EaseOut(_easeElasticDelegate, oscillations, springiness);
+        public Tween EaseInOutBack(float amplitude = 1f) => EaseIn(_easeBackDelegate, new Vector4(amplitude, 0, 0, 0))
+            .EaseOut(_easeBackDelegate, new Vector4(amplitude, 0, 0, 0));
 
-        public Tween EaseInBounce(int oscillations = 3, float springiness = 2f) => EaseIn(_easeBounceDelegate, oscillations, springiness);
-        public Tween EaseOutBounce(int oscillations = 3, float springiness = 2f) => EaseOut(_easeBounceDelegate, oscillations, springiness);
-        public Tween EaseInOutBounce(int oscillations = 3, float springiness = 2f) => EaseIn(_easeBounceDelegate, oscillations, springiness).EaseOut(_easeBounceDelegate, oscillations, springiness);
+        public Tween EaseInElastic(int oscillations = 3, float springiness = 3f) =>
+            EaseIn(_easeElasticDelegate, new Vector4(oscillations, springiness, 0, 0));
+
+        public Tween EaseOutElastic(int oscillations = 3, float springiness = 3f) =>
+            EaseOut(_easeElasticDelegate, new Vector4(oscillations, springiness, 0, 0));
+
+        public Tween EaseInOutElastic(int oscillations = 3, float springiness = 3f) =>
+            EaseIn(_easeElasticDelegate, new Vector4(oscillations, springiness, 0, 0))
+                .EaseOut(_easeElasticDelegate, new Vector4(oscillations, springiness, 0, 0));
+
+        public Tween EaseInBounce(int oscillations = 3, float springiness = 2f) =>
+            EaseIn(_easeBounceDelegate, new Vector4(oscillations, springiness, 0, 0));
+
+        public Tween EaseOutBounce(int oscillations = 3, float springiness = 2f) =>
+            EaseOut(_easeBounceDelegate, new Vector4(oscillations, springiness, 0, 0));
+
+        public Tween EaseInOutBounce(int oscillations = 3, float springiness = 2f) =>
+            EaseIn(_easeBounceDelegate, new Vector4(oscillations, springiness, 0, 0))
+                .EaseOut(_easeBounceDelegate, new Vector4(oscillations, springiness, 0, 0));
 
         public Tween EaseInSine() => EaseIn(_easeSineDelegate);
         public Tween EaseOutSine() => EaseOut(_easeSineDelegate);
@@ -537,9 +740,25 @@ namespace NoZ.Tweening
         public Tween EaseOutCircle() => EaseOut(_easeCircleDelegate);
         public Tween EaseInOutCircle() => EaseIn(_easeCircleDelegate).EaseOut(_easeCircleDelegate);
 
-        public Tween EaseInExponential(float exponent = 2.0f) => EaseIn(_easeExponential, exponent);
-        public Tween EaseOutExponential(float exponent = 2.0f) => EaseOut(_easeExponential, exponent);
-        public Tween EaseInOutExponential(float exponent = 2.0f) => EaseIn(_easeExponential, exponent).EaseOut(_easeExponential, exponent);
+        public Tween EaseInExponential(float exponent = 2.0f) =>
+            EaseIn(_easeExponential, new Vector4(exponent, 0, 0, 0));
+
+        public Tween EaseOutExponential(float exponent = 2.0f) =>
+            EaseOut(_easeExponential, new Vector4(exponent, 0, 0, 0));
+
+        public Tween EaseInOutExponential(float exponent = 2.0f) =>
+            EaseIn(_easeExponential, new Vector4(exponent, 0, 0, 0))
+                .EaseOut(_easeExponential, new Vector4(exponent, 0, 0, 0));
+
+        public Tween EaseInCubicBezier(float p0, float p1, float p2, float p3) =>
+            EaseIn(_easeCubicBezier, new Vector4(p0, p1, p2, p3));
+
+        public Tween EaseOutCubicBezier(float p0, float p1, float p2, float p3) =>
+            EaseOut(_easeCubicBezier, new Vector4(p0, p1, p2, p3));
+
+        public Tween EaseInOutCubicBezier(float p0, float p1, float p2, float p3) =>
+            EaseIn(_easeCubicBezier, new Vector4(p0, p1, p2, p3))
+                .EaseOut(_easeExponential, new Vector4(p0, p1, p2, p3));
 
 
         private TweenContext ValidateModifierContext()
@@ -557,10 +776,16 @@ namespace NoZ.Tweening
         /// Internal method used to allocate a pooled Tween
         /// </summary>
         /// <returns>Allocated Context</returns>
-        private static Tween AllocTween(TweenProvider provider, object target, Variant from, Variant to, TweenContext.Flags flags = TweenContext.Flags.None, uint providerOptions = 0)
+        private static Tween AllocTween(TweenProvider provider, object target, Variant from, Variant to,
+            TweenContext.Flags flags = TweenContext.Flags.None, uint providerOptions = 0)
         {
             var context = TweenContext.Alloc(provider, target, from, to, flags, providerOptions);
             return new Tween { _context = context, _instanceId = context.instanceId };
+        }
+
+        internal static void CallFrame(int maxPriority)
+        {
+            Frame?.Invoke(maxPriority);
         }
     }
 }

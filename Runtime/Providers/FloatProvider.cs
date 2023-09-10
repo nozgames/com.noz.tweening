@@ -61,5 +61,7 @@ namespace NoZ.Tweening
 
         protected sealed override float GetValue (TTarget target) => _member.GetValue(target);
         protected sealed override void SetValue (TTarget target, float value) => _member.SetValue(target, value);
+
+        public float Get(TTarget target) => GetValue(target);
     }
 }

@@ -27,41 +27,38 @@ using UnityEngine.UIElements;
 
 namespace NoZ.Tweening
 {
-    public abstract class StyleLengthProvider<TTarget> : TweenProvider<TTarget> where TTarget : class
+    public abstract class StyleRotateProvider<TTarget> : TweenProvider<TTarget> where TTarget : class
     {
-        protected internal sealed override Variant Evalulate(Variant from, Variant to, float t, uint optionsAsUint) => Evaluate(from.styleLength, to.styleLength, t);
+        protected internal sealed override Variant Evalulate(Variant from, Variant to, float t, uint optionsAsUint) => Evaluate(from.styleRotate, to.styleRotate, t);
         protected internal sealed override Variant GetValue(TTarget target, uint optionsAsUint) => GetValue(target);
         protected internal sealed override void SetValue(TTarget target, Variant v, uint optionsAsUint) => SetValue(target, v);
 
-        protected virtual StyleLength Evaluate(StyleLength from, StyleLength to, float normalizedTime) =>
-            new StyleLength(new Length(from.value.value + (to.value.value - from.value.value) * normalizedTime, to.value.unit));
+        protected virtual StyleRotate Evaluate(StyleRotate from, StyleRotate to, float normalizedTime) =>
+            new StyleRotate(new Rotate(from.value.angle.value + (to.value.angle.value - from.value.angle.value) * normalizedTime));
         
-        protected abstract StyleLength GetValue(TTarget target);
-        protected abstract void SetValue(TTarget target, StyleLength value);
+        protected abstract StyleRotate GetValue(TTarget target);
+        protected abstract void SetValue(TTarget target, StyleRotate value);
     }
 
     /// <summary>
-    /// Provides support for UIElement StyleLength parameters
+    /// Provides support for UIElement StyleRotate parameters
     /// </summary>
     /// <typeparam name="TTarget">Target type</typeparam>
-    public class StyleLengthMemberProvider<TTarget> : StyleLengthProvider<TTarget> where TTarget : class
+    public class StyleRotateMemberProvider<TTarget> : StyleRotateProvider<TTarget> where TTarget : class
     {
-        private FastMember<TTarget, StyleLength> _member;
+        private FastMember<TTarget, StyleRotate> _member;
 
         /// <summary>
         /// Returns a cached member provider for the member with the given <paramref name="memberName"/>.
         /// </summary>
         /// <param name="memberName"></param>
         /// <returns></returns>
-        public static StyleLengthMemberProvider<TTarget> Get(string memberName) =>
-            ProviderCache<string, StyleLengthMemberProvider<TTarget>>.Get(memberName);
+        public static StyleRotateMemberProvider<TTarget> Get(string memberName) =>
+            ProviderCache<string, StyleRotateMemberProvider<TTarget>>.Get(memberName);
 
-        private StyleLengthMemberProvider(string memberName) => _member = new FastMember<TTarget, StyleLength>(memberName);
+        private StyleRotateMemberProvider(string memberName) => _member = new FastMember<TTarget, StyleRotate>(memberName);
 
-        protected sealed override StyleLength GetValue(TTarget target) => _member.GetValue(target);
-        protected sealed override void SetValue(TTarget target, StyleLength value) => _member.SetValue(target, value);
-
-        public void Set(TTarget target, StyleLength value) => SetValue(target, value);
-        public StyleLength Get(TTarget target) => GetValue(target);
+        protected sealed override StyleRotate GetValue(TTarget target) => _member.GetValue(target);
+        protected sealed override void SetValue(TTarget target, StyleRotate value) => _member.SetValue(target, value);
     }
 }

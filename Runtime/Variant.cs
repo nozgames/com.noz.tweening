@@ -89,7 +89,16 @@ namespace NoZ.Tweening
         public StyleLength styleLength;
 
         [FieldOffset(0)]
+        public StyleScale styleScale;
+
+        [FieldOffset(0)]
         public StyleColor styleColor;
+
+        [FieldOffset(0)]
+        public StyleRotate styleRotate;
+
+        [FieldOffset(0)]
+        public StyleTranslate styleTranslate;
 
         public static implicit operator Variant(char v) => new Variant { i8 = v };
         public static implicit operator Variant(byte v) => new Variant { ui8 = v };
@@ -110,6 +119,9 @@ namespace NoZ.Tweening
         public static implicit operator Variant(StyleFloat v) => new Variant { styleFloat = v };
         public static implicit operator Variant(StyleLength v) => new Variant { styleLength = v };
         public static implicit operator Variant(StyleColor v) => new Variant { styleColor = v };
+        public static implicit operator Variant(StyleScale v) => new Variant { styleScale = v };
+        public static implicit operator Variant(StyleRotate v) => new Variant { styleRotate = v };
+        public static implicit operator Variant(StyleTranslate v) => new Variant { styleTranslate = v };
 
         public static implicit operator char(Variant v) => v.i8;
         public static implicit operator byte(Variant v) => v.ui8;
@@ -129,6 +141,9 @@ namespace NoZ.Tweening
         public static implicit operator StyleInt(Variant v) => v.styleInt;
         public static implicit operator StyleFloat(Variant v) => v.styleFloat;
         public static implicit operator StyleLength(Variant v) => v.styleLength;
+        public static implicit operator StyleScale(Variant v) => v.styleScale;
         public static implicit operator StyleColor(Variant v) => v.styleColor;
+        public static implicit operator StyleRotate(Variant v) => v.styleRotate;
+        public static implicit operator StyleTranslate(Variant v) => v.styleTranslate;
     }
 }

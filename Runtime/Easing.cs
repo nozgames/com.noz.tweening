@@ -30,23 +30,22 @@ namespace NoZ.Tweening
     /// Delegate used to calculate easing for a normalized time of 0-1
     /// </summary>
     /// <param name="normalizedTime">Time value in the range of 0 to 1</param>
-    /// <param name="param1">Optional parameter</param>
-    /// <param name="param2">Optional parameter</param>
+    /// <param name="param">Optional parameters</param>
     /// <returns>Eased time value</returns>
-    public delegate float EaseDelegate(float normalizedTime, float param1, float param2);
+    public delegate float EaseDelegate(float normalizedTime, Vector4 param);
 
     public static class Easing
     {
-        public static float EaseQuadratic(float t, float p1, float p2) => t * t;
+        public static float EaseQuadratic(float t, Vector4 p) => t * t;
 
-        public static float EaseCubic (float t, float p1, float p2) => t * t * t;
+        public static float EaseCubic(float t, Vector4 p) => t * t * t;
 
-        public static float EaseBack (float t, float p1, float p2) => Mathf.Pow(t, 3f) - t * Mathf.Max(0f, p1) * Mathf.Sin(Mathf.PI * t);
+        public static float EaseBack(float t, Vector4 p) => Mathf.Pow(t, 3f) - t * Mathf.Max(0f, p.x) * Mathf.Sin(Mathf.PI * t);
 
-        public static float EaseBounce (float t, float p1, float p2)
+        public static float EaseBounce(float t, Vector4 p)
         {
-            var Bounces = p1;
-            var Bounciness = p2;
+            var Bounces = p.x;
+            var Bounciness = p.y;
 
             var pow = Mathf.Pow(Bounciness, Bounces);
             var invBounciness = 1f - Bounciness;
@@ -70,10 +69,10 @@ namespace NoZ.Tweening
             return (-amplitude / (radius * radius)) * (peak_time - radius) * (peak_time + radius);
         }
 
-        public static float EaseElastic (float t, float oscillations, float springiness)
+        public static float EaseElastic(float t, Vector4 p)
         {
-            oscillations = Mathf.Max(0, (int)oscillations);
-            springiness = Mathf.Max(0f, springiness);
+            var oscillations = Mathf.Max(0, (int)p.x);
+            var springiness = Mathf.Max(0f, p.y);
 
             float expo;
             if (springiness == 0f)
@@ -84,13 +83,35 @@ namespace NoZ.Tweening
             return expo * (Mathf.Sin((Mathf.PI * 2f * oscillations + Mathf.PI * 0.5f) * t));
         }
 
-        public static float EaseSine (float t, float p1, float p2) =>
+        public static float EaseSine(float t, Vector4 p) =>
             1.0f - Mathf.Sin(Mathf.PI * 0.5f * (1f - t));
 
-        public static float EaseCircle (float t, float p1, float p2) =>
+        public static float EaseCircle(float t, Vector4 p) =>
             1.0f - Mathf.Sqrt(1.0f - t * t);
 
-        public static float EaseExponential (float t, float exponent, float p2) =>
-            exponent == 0.0f ? t : ((Mathf.Exp(exponent * t) - 1.0f) / (Mathf.Exp(exponent) - 1.0f));
+        public static float EaseExponential(float t, Vector4 p) =>
+            p.x == 0.0f ? t : ((Mathf.Exp(p.x * t) - 1.0f) / (Mathf.Exp(p.x) - 1.0f));
+
+        public static float EaseCubicBezier(float t, Vector4 p)
+        {
+            var oneMinusT = 1.0f - t;
+            var oneMinusT_2 = oneMinusT * oneMinusT;
+            var oneMinusT_3 = oneMinusT_2 * oneMinusT;
+            var t_2 = t * t;
+            var t_3 = t_2 * t;
+
+            var p0 = Vector2.zero;
+            var p1 = new Vector2(p.x, p.y);
+            var p2 = new Vector2(p.z, p.w);
+            var p3 = Vector2.one;
+
+            var r =
+                p0 * oneMinusT_3 +
+                3.0f * p1 * t * oneMinusT_2 +
+                3.0f * p2 * t_2 * oneMinusT +
+                p3 * t_3;
+
+            return r.y;
+        }
     }
 }

@@ -30,15 +30,29 @@ namespace NoZ.Tweening.Internals
 {
     internal class TweenContext
     {
+        private static int _maxPriority = 0;
+        
         private class Updater : MonoBehaviour
         {
-            private void Update() => TweenContext.Update(UpdateMode.Default, Time.deltaTime, Time.unscaledDeltaTime);
+            private void Update()
+            {
+                _maxPriority = int.MinValue;
+                TweenContext.Update(UpdateMode.Default, Time.deltaTime, Time.unscaledDeltaTime);   
+            }
+            
             private void FixedUpdate() => TweenContext.Update(UpdateMode.Fixed, Time.fixedDeltaTime, Time.fixedUnscaledDeltaTime);
-            private void LateUpdate() => TweenContext.Update(UpdateMode.Late, Time.deltaTime, Time.unscaledDeltaTime);
+
+            private void LateUpdate()
+            {
+                TweenContext.Update(UpdateMode.Late, Time.deltaTime, Time.unscaledDeltaTime);
+                
+                if (Tween.IsAnyTweenAnimating && _maxPriority != int.MinValue)
+                    Tween.CallFrame(_maxPriority);
+            }
             
             private void OnApplicationQuit()
             {
-                Tween.StopAll(false);
+                Tween.StopAll(false);                
                 Destroy(gameObject);
             }
         }
@@ -111,8 +125,8 @@ namespace NoZ.Tweening.Internals
         private Variant _to;
         private EaseDelegate _easeIn;
         private EaseDelegate _easeOut;
-        private Vector2 _easeInParams;
-        private Vector2 _easeOutParams;
+        private Vector4 _easeInParams;
+        private Vector4 _easeOutParams;
         private Action _onStop;
         private Action _onPlay;
         private Action _onPause;
@@ -123,6 +137,8 @@ namespace NoZ.Tweening.Internals
         private LinkedListNode<TweenContext> _stateNode;
         private LinkedListNode<TweenContext> _elementsHead;
         private LinkedListNode<TweenContext> _elementsTail;
+
+        internal int _priority;
 
         /// <summary>List of contexts per state</summary>
         internal static LinkedList<TweenContext>[] _stateContexts;
@@ -219,7 +235,7 @@ namespace NoZ.Tweening.Internals
             // Clear the free cache which will throw all of the cached tweens into the garbage
             _stateContexts[(int)State.Free].Clear();
 
-            if(_updater)
+            if(_updater != null)
             {
                 UnityEngine.Object.Destroy(_updater.gameObject);
                 _updater = null;
@@ -228,6 +244,11 @@ namespace NoZ.Tweening.Internals
 
         public void Play()
         {
+#if UNITY_EDITOR
+            if (!UnityEditor.EditorApplication.isPlaying)
+                return;
+#endif
+
             if (isElement)
                 return;
 
@@ -378,16 +399,16 @@ namespace NoZ.Tweening.Internals
                 if (_easeIn != null && _easeOut != null)
                 {
                     if (normalizedTime <= 0.5f)
-                        normalizedTime = _easeIn(normalizedTime * 2f, _easeInParams.x, _easeInParams.y) * 0.5f;
+                        normalizedTime = _easeIn(normalizedTime * 2f, _easeInParams) * 0.5f;
                     else if (normalizedTime > 0.5f)
-                        normalizedTime = (1f - _easeOut((1f - normalizedTime) * 2f, _easeOutParams.x, _easeOutParams.y)) * 0.5f + 0.5f;
+                        normalizedTime = (1f - _easeOut((1f - normalizedTime) * 2f, _easeOutParams)) * 0.5f + 0.5f;
                 }
                 // Ease In
                 else if (_easeIn != null)
-                    normalizedTime = _easeIn(normalizedTime, _easeInParams.x, _easeInParams.y);
+                    normalizedTime = _easeIn(normalizedTime, _easeInParams);
                 // Ease Out
                 else if (_easeOut != null)
-                    normalizedTime = 1f - _easeOut(1f - normalizedTime, _easeOutParams.x, _easeOutParams.y);
+                    normalizedTime = 1f - _easeOut(1f - normalizedTime, _easeOutParams);
 
                 _provider.SetValue(_target, _provider.Evalulate(_from, _to, normalizedTime, _providerOptions), _providerOptions);
             }
@@ -437,16 +458,18 @@ namespace NoZ.Tweening.Internals
             }
         }
 
-        public void EaseIn(EaseDelegate easeDelegate, float param1 = 0.0f, float param2 = 0.0f)
+        public void EaseIn(EaseDelegate easeDelegate) => EaseIn(easeDelegate, Vector4.zero);
+        public void EaseIn(EaseDelegate easeDelegate, Vector4 easeParams)
         {
             _easeIn = easeDelegate;
-            _easeInParams = new Vector2(param1, param2);            
+            _easeInParams = easeParams;
         }
 
-        public void EaseOut(EaseDelegate easeDelegate, float param1 = 0.0f, float param2 = 0.0f)
+        public void EaseOut(EaseDelegate easeDelegate) => EaseOut(easeDelegate, Vector4.zero);
+        public void EaseOut(EaseDelegate easeDelegate, Vector4 easeParams)
         {
             _easeOut = easeDelegate;
-            _easeOutParams = new Vector2(param1, param2);
+            _easeOutParams = easeParams;
         }
 
         public void SetParent (TweenContext parent)
@@ -487,7 +510,10 @@ namespace NoZ.Tweening.Internals
                 // It is possible the state changed during the update, if so just skip it
                 var context = _tempContexts[tempContextIndex];
                 if (context._state == State.Playing)
+                {
+                    _maxPriority = Mathf.Max(context._priority, _maxPriority);
                     context.Update(context.HasFlags(Flags.UnscaledTime) ? unscaledDeltaTime : deltaTime);
+                }
             }
 
             _tempContexts.RemoveRange(tempContextStart, tempContextEnd - tempContextStart);
@@ -527,6 +553,7 @@ namespace NoZ.Tweening.Internals
             context._to = to;
             context._provider = provider;
             context._target = target;
+            context._priority = 0;
             context._providerOptions = providerOptions;
             context._updateMode = UpdateMode.Default;
 
@@ -575,7 +602,7 @@ namespace NoZ.Tweening.Internals
 
             if (destroyOnStop || deactivateOnStop || disableOnStop)
             {
-                var component = target as MonoBehaviour;
+                var component = target as Component;
                 var gameObject = component != null ? component.gameObject : target as GameObject;
 
                 if (deactivateOnStop && gameObject != null)

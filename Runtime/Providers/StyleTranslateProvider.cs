@@ -27,41 +27,44 @@ using UnityEngine.UIElements;
 
 namespace NoZ.Tweening
 {
-    public abstract class StyleLengthProvider<TTarget> : TweenProvider<TTarget> where TTarget : class
+    public abstract class StyleTranslateProvider<TTarget> : TweenProvider<TTarget> where TTarget : class
     {
-        protected internal sealed override Variant Evalulate(Variant from, Variant to, float t, uint optionsAsUint) => Evaluate(from.styleLength, to.styleLength, t);
+        protected internal sealed override Variant Evalulate(Variant from, Variant to, float t, uint optionsAsUint) => Evaluate(from.styleTranslate, to.styleTranslate, t);
         protected internal sealed override Variant GetValue(TTarget target, uint optionsAsUint) => GetValue(target);
         protected internal sealed override void SetValue(TTarget target, Variant v, uint optionsAsUint) => SetValue(target, v);
 
-        protected virtual StyleLength Evaluate(StyleLength from, StyleLength to, float normalizedTime) =>
-            new StyleLength(new Length(from.value.value + (to.value.value - from.value.value) * normalizedTime, to.value.unit));
+        protected virtual StyleTranslate Evaluate(StyleTranslate from, StyleTranslate to, float normalizedTime)
+        {
+            var x = from.value.x.value + (to.value.x.value - from.value.x.value) * normalizedTime;
+            var y = from.value.y.value + (to.value.y.value - from.value.y.value) * normalizedTime;
+            var z = from.value.z + (to.value.z - from.value.z) * normalizedTime;
+            return new StyleTranslate(new Translate(new Length(x), new Length(y), z));
+        }
+            
         
-        protected abstract StyleLength GetValue(TTarget target);
-        protected abstract void SetValue(TTarget target, StyleLength value);
+        protected abstract StyleTranslate GetValue(TTarget target);
+        protected abstract void SetValue(TTarget target, StyleTranslate value);
     }
 
     /// <summary>
-    /// Provides support for UIElement StyleLength parameters
+    /// Provides support for UIElement StyleTranslate parameters
     /// </summary>
     /// <typeparam name="TTarget">Target type</typeparam>
-    public class StyleLengthMemberProvider<TTarget> : StyleLengthProvider<TTarget> where TTarget : class
+    public class StyleTranslateMemberProvider<TTarget> : StyleTranslateProvider<TTarget> where TTarget : class
     {
-        private FastMember<TTarget, StyleLength> _member;
+        private FastMember<TTarget, StyleTranslate> _member;
 
         /// <summary>
         /// Returns a cached member provider for the member with the given <paramref name="memberName"/>.
         /// </summary>
         /// <param name="memberName"></param>
         /// <returns></returns>
-        public static StyleLengthMemberProvider<TTarget> Get(string memberName) =>
-            ProviderCache<string, StyleLengthMemberProvider<TTarget>>.Get(memberName);
+        public static StyleTranslateMemberProvider<TTarget> Get(string memberName) =>
+            ProviderCache<string, StyleTranslateMemberProvider<TTarget>>.Get(memberName);
 
-        private StyleLengthMemberProvider(string memberName) => _member = new FastMember<TTarget, StyleLength>(memberName);
+        private StyleTranslateMemberProvider(string memberName) => _member = new FastMember<TTarget, StyleTranslate>(memberName);
 
-        protected sealed override StyleLength GetValue(TTarget target) => _member.GetValue(target);
-        protected sealed override void SetValue(TTarget target, StyleLength value) => _member.SetValue(target, value);
-
-        public void Set(TTarget target, StyleLength value) => SetValue(target, value);
-        public StyleLength Get(TTarget target) => GetValue(target);
+        protected sealed override StyleTranslate GetValue(TTarget target) => _member.GetValue(target);
+        protected sealed override void SetValue(TTarget target, StyleTranslate value) => _member.SetValue(target, value);
     }
 }

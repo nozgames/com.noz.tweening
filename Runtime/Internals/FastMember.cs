@@ -36,19 +36,33 @@ namespace NoZ.Tweening.Internals
         private SetValueDelegate _setValue;
         private GetValueDelegate _getValue;
 
-        public FastMember(string memberName, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy)
+        public FastMember(string memberName, BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.Instance | BindingFlags.FlattenHierarchy | BindingFlags.NonPublic)
         {
             // Property
             var propertyInfo = typeof(T).GetProperty(memberName, bindingFlags);
             if (null != propertyInfo)
             {
-                _getValue = (GetValueDelegate)propertyInfo.GetMethod.CreateDelegate(typeof(GetValueDelegate));
-                _setValue = (SetValueDelegate)propertyInfo.SetMethod.CreateDelegate(typeof(SetValueDelegate));
+                if (propertyInfo.GetMethod != null)
+                    _getValue = (GetValueDelegate)propertyInfo.GetMethod.CreateDelegate(typeof(GetValueDelegate));
+                else
+                    _getValue = null;
+
+                if (propertyInfo.SetMethod != null)
+                    _setValue = (SetValueDelegate)propertyInfo.SetMethod.CreateDelegate(typeof(SetValueDelegate));
+                else
+                    _setValue = null;
+
+                if (_getValue == null)
+                    throw new InvalidOperationException($"GetValue method missing for {propertyInfo.Name}");
+
+                if (_setValue == null)
+                    throw new InvalidOperationException($"SetValue method missing for {propertyInfo.Name}");
+
                 return;
             }
 
             // Field
-            var fieldInfo = typeof(T).GetField(memberName, bindingFlags);
+            var fieldInfo = typeof(T).GetField(memberName, bindingFlags | BindingFlags.NonPublic);
             if (null != fieldInfo)
             {
                 if (fieldInfo == null)
@@ -69,6 +83,8 @@ namespace NoZ.Tweening.Internals
                     source,
                     value
                 ).Compile();
+
+                return;
             }
 
             throw new InvalidOperationException($"The type `{typeof(T).Name}` does not contain a property or field named `{memberName}` that matches the binding flags.");
@@ -90,3 +106,4 @@ namespace NoZ.Tweening.Internals
         public void SetValue(T target, V value) => _setValue(target, value);
     }
 }
+
